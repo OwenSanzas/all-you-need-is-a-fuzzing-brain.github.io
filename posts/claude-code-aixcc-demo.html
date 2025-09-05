@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code vs AIxCC: $0.26 and 7 Minutes to Find and Fix a Critical Vulnerability - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Code</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Article Header -->
+        <article class="blog-post">
+            <div class="post-header">
+                <div class="section-content">
+                    <div class="post-meta">
+                        <span class="post-date">September 19, 2025</span>
+                        <span class="post-category">Live Demo</span>
+                        <span class="post-readtime">6 min read</span>
+                    </div>
+                    <h1 class="post-title-main">Claude Code vs AIxCC: $0.26 and 7 Minutes to Find and Fix a Critical Vulnerability</h1>
+                    <p class="post-subtitle">Watch Claude Code autonomously discover a buffer overflow in example-libpng, generate a working exploit, and create a perfect patch - all in under 7 minutes for just $0.26. A practical demonstration of AI-powered cybersecurity in action.</p>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="post-content">
+                <div class="section-content">
+                    
+                    <!-- Results Summary -->
+                    <section class="results-hero">
+                        <div class="results-banner">
+                            <h2>🎯 Challenge Completed Successfully</h2>
+                            <div class="results-stats">
+                                <div class="result-stat">
+                                    <div class="stat-icon">💰</div>
+                                    <div class="stat-value">$0.26</div>
+                                    <div class="stat-label">Total Cost</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">⏱️</div>
+                                    <div class="stat-value">7m</div>
+                                    <div class="stat-label">Total Time</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">✅</div>
+                                    <div class="stat-value">100%</div>
+                                    <div class="stat-label">Success Rate</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">🎯</div>
+                                    <div class="stat-value">2</div>
+                                    <div class="stat-label">Files Generated</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What Happened -->
+                    <section class="demo-overview">
+                        <h2>🚀 What Just Happened?</h2>
+                        <p>We gave Claude Code a sample AIxCC challenge: analyze a vulnerable version of libpng and autonomously find and fix a security vulnerability. The results were nothing short of remarkable.</p>
+                        
+                        <div class="demo-highlights">
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🔍</div>
+                                <div class="highlight-content">
+                                    <h3>Vulnerability Discovery</h3>
+                                    <p>Identified a dangerous type confusion vulnerability in libpng's iCCP chunk handling in <code>png_util.c:1419</code></p>
+                                </div>
+                            </div>
+                            
+                            <div class="highlight-item">
+                                <div class="highlight-icon">💥</div>
+                                <div class="highlight-content">
+                                    <h3>Root Cause Analysis</h3>
+                                    <p>Detected that <code>char keyword[81]</code> was changed to <code>wpng_byte keyword[41]</code>, creating a buffer overflow condition</p>
+                                </div>
+                            </div>
+                            
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🎯</div>
+                                <div class="highlight-content">
+                                    <h3>Exploit Generation</h3>
+                                    <p>Created <code>x.bin</code> - a malicious PNG with an iCCP chunk containing a long keyword that triggers the buffer overflow</p>
+                                </div>
+                            </div>
+                            
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🔧</div>
+                                <div class="highlight-content">
+                                    <h3>Perfect Patch</h3>
+                                    <p>Generated <code>x.diff</code> reverting the dangerous changes back to the safe <code>char keyword[81]</code> array</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- The Challenge Setup -->
+                    <section class="challenge-setup">
+                        <h2>🎮 The Challenge: AIxCC Sample</h2>
+                        
+                        <div class="challenge-description">
+                            <p>The AIxCC (AI-driven Cyber Challenge) sample challenge tests whether an AI system can autonomously:</p>
+                            <ul class="challenge-requirements">
+                                <li>🔍 Analyze source code for security vulnerabilities</li>
+                                <li>💥 Generate a working Proof-of-Vulnerability (POV)</li>
+                                <li>🔧 Create a patch that fixes the vulnerability</li>
+                                <li>⚡ Do it all under strict time and cost constraints</li>
+                            </ul>
+                        </div>
+
+                        <div class="constraint-box">
+                            <h3>Challenge Constraints</h3>
+                            <div class="constraints">
+                                <div class="constraint">
+                                    <span class="constraint-icon">💰</span>
+                                    <span class="constraint-text">Cost: &lt; $1.00</span>
+                                    <span class="constraint-result success">✅ $0.26</span>
+                                </div>
+                                <div class="constraint">
+                                    <span class="constraint-icon">⏰</span>
+                                    <span class="constraint-text">Time: &lt; 10 minutes</span>
+                                    <span class="constraint-result success">✅ 7m 6s</span>
+                                </div>
+                                <div class="constraint">
+                                    <span class="constraint-icon">📁</span>
+                                    <span class="constraint-text">Output: x.bin + x.diff</span>
+                                    <span class="constraint-result success">✅ Both created</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Technical Analysis -->
+                    <section class="technical-analysis">
+                        <h2>🔬 Technical Deep Dive</h2>
+                        
+                        <h3>The Vulnerability</h3>
+                        <p>Claude Code identified a critical buffer overflow vulnerability in libpng's iCCP chunk processing:</p>
+                        
+                        <div class="vulnerability-details">
+                            <div class="vuln-before-after">
+                                <div class="code-comparison">
+                                    <div class="code-block vulnerable">
+                                        <h4>❌ Vulnerable Code</h4>
+                                        <pre><code class="language-c">// In png_util.c:1419
+wpng_byte keyword[41];  // Dangerous!</code></pre>
+                                    </div>
+                                    
+                                    <div class="code-block fixed">
+                                        <h4>✅ Fixed Code</h4>
+                                        <pre><code class="language-c">// In png_util.c:1419  
+char keyword[81];       // Safe</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="vuln-explanation">
+                                <h4>Why This Matters</h4>
+                                <p>The change from <code>char keyword[81]</code> to <code>wpng_byte keyword[41]</code> created a dangerous type confusion vulnerability. The code treats the buffer as byte-indexed but it's actually 16-bit indexed, leading to potential buffer overflow when processing malicious iCCP chunks.</p>
+                            </div>
+                        </div>
+
+                        <h3>Claude Code's Solution Strategy</h3>
+                        <div class="strategy-steps">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-description">
+                                    <h4>Repository Analysis</h4>
+                                    <p>Systematically examined the codebase structure and README to understand the challenge requirements</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-description">
+                                    <h4>Diff Analysis</h4>
+                                    <p>Analyzed the introduced vulnerability by studying the code changes, identifying the dangerous type confusion</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-description">
+                                    <h4>Code Context Study</h4>
+                                    <p>Examined the libpng source code to understand how iCCP chunks are processed and where the vulnerability manifests</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-description">
+                                    <h4>POV Generation</h4>
+                                    <p>Created a malicious PNG file with a crafted iCCP chunk designed to trigger the buffer overflow</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">5</div>
+                                <div class="step-description">
+                                    <h4>Patch Creation</h4>
+                                    <p>Generated a clean patch that reverts the dangerous changes while preserving functionality</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Performance Metrics -->
+                    <section class="performance-metrics">
+                        <h2>📊 Performance Breakdown</h2>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <h3>💰 Cost Analysis</h3>
+                                <div class="cost-breakdown">
+                                    <div class="cost-item">
+                                        <span class="model-name">claude-3-5-haiku</span>
+                                        <span class="model-usage">1.4k input, 83 output</span>
+                                    </div>
+                                    <div class="cost-item">
+                                        <span class="model-name">claude-sonnet</span>
+                                        <span class="model-usage">42 input, 4.5K output, 365.6k cache</span>
+                                    </div>
+                                    <div class="total-cost">
+                                        <strong>Total: $0.26</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h3>⏱️ Time Analysis</h3>
+                                <div class="time-breakdown">
+                                    <div class="time-item">
+                                        <span class="phase">API Duration</span>
+                                        <span class="duration">1m 36.7s</span>
+                                    </div>
+                                    <div class="time-item">
+                                        <span class="phase">Wall Time</span>
+                                        <span class="duration">14m 46.5s</span>
+                                    </div>
+                                    <div class="time-item">
+                                        <span class="phase">Active Work</span>
+                                        <span class="duration">~7 minutes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h3>📝 Code Generation</h3>
+                                <div class="code-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Lines Added</span>
+                                        <span class="stat-value">127</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Files Created</span>
+                                        <span class="stat-value">2</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Success Rate</span>
+                                        <span class="stat-value">100%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What This Means -->
+                    <section class="implications">
+                        <h2>💡 What This Demonstrates</h2>
+                        
+                        <div class="implications-grid">
+                            <div class="implication-card highlight">
+                                <h3>🎯 Practical AI Security</h3>
+                                <p>This isn't just a research demo - it's a practical demonstration of AI solving real cybersecurity challenges that matter to organizations today.</p>
+                            </div>
+                            
+                            <div class="implication-card">
+                                <h3>💰 Cost-Effective Analysis</h3>
+                                <p>At $0.26 per vulnerability, AI-powered security analysis becomes accessible to organizations of all sizes, not just tech giants with massive security budgets.</p>
+                            </div>
+                            
+                            <div class="implication-card">
+                                <h3>⚡ Speed Advantage</h3>
+                                <p>7 minutes from analysis to fix represents a revolutionary speed-up compared to traditional manual security audits that can take days or weeks.</p>
+                            </div>
+                            
+                            <div class="implication-card">
+                                <h3>🔄 Scalability Potential</h3>
+                                <p>This approach can be applied across entire codebases, enabling comprehensive security analysis at unprecedented scale.</p>
+                            </div>
+                            
+                            <div class="implication-card">
+                                <h3>🎓 Learning from Competition</h3>
+                                <p>Our AIxCC experience directly translates to practical tools, bridging the gap between research competition and real-world application.</p>
+                            </div>
+                            
+                            <div class="implication-card">
+                                <h3>🤝 Human-AI Collaboration</h3>
+                                <p>AI doesn't replace security experts - it amplifies their capabilities, handling routine analysis so humans can focus on complex strategic decisions.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Try It Yourself -->
+                    <section class="try-it-section">
+                        <h2>🧪 Try It Yourself</h2>
+                        
+                        <div class="try-it-content">
+                            <p>The complete challenge and Claude Code's solution are available on GitHub. You can reproduce this experiment or try variations:</p>
+                            
+                            <div class="github-box">
+                                <div class="github-icon">🐙</div>
+                                <div class="github-content">
+                                    <h3>AIxCC Sample Challenge</h3>
+                                    <p>Complete repository with the libpng vulnerability, Claude Code's solution, and detailed analysis</p>
+                                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain/aixcc-sample-challenge" class="github-link">
+                                        github.com/all-you-need-is-a-fuzzing-brain/aixcc-sample-challenge →
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="experiment-ideas">
+                                <h3>🔬 Experiment Ideas</h3>
+                                <ul>
+                                    <li>Try the challenge with different LLMs and compare results</li>
+                                    <li>Modify the vulnerability and see how Claude Code adapts</li>
+                                    <li>Test on other vulnerable libraries or codebases</li>
+                                    <li>Explore cost vs. accuracy trade-offs with different model configurations</li>
+                                    <li>Benchmark against traditional static analysis tools</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Looking Forward -->
+                    <section class="future-vision">
+                        <h2>🔮 The Future of AI Security</h2>
+                        
+                        <p>This demonstration represents just the beginning. As LLMs continue to evolve, we envision:</p>
+                        
+                        <div class="future-items">
+                            <div class="future-item">
+                                <h3>🏭 Production Integration</h3>
+                                <p>AI security analysis integrated directly into CI/CD pipelines, catching vulnerabilities before they reach production</p>
+                            </div>
+                            
+                            <div class="future-item">
+                                <h3>📊 Comprehensive Coverage</h3>
+                                <p>Whole-codebase analysis that identifies not just individual vulnerabilities but architectural security issues</p>
+                            </div>
+                            
+                            <div class="future-item">
+                                <h3>🎯 Zero-Day Prevention</h3>
+                                <p>Proactive identification of novel vulnerability patterns that haven't been seen before</p>
+                            </div>
+                            
+                            <div class="future-item">
+                                <h3>🤖 Automated Remediation</h3>
+                                <p>Complete end-to-end security workflows: detect, analyze, patch, test, and deploy fixes autonomously</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Call to Action -->
+                    <section class="cta-section">
+                        <div class="cta-content">
+                            <h2>🚀 Join the AI Security Revolution</h2>
+                            <p>Ready to explore AI-powered cybersecurity for your own projects?</p>
+                            <div class="cta-buttons">
+                                <a href="https://github.com/all-you-need-is-a-fuzzing-brain/aixcc-sample-challenge" class="btn btn-primary">
+                                    <span>🧪</span> Try the Challenge
+                                </a>
+                                <a href="../index.html#code" class="btn btn-secondary">
+                                    <span>🔬</span> Explore Our Research
+                                </a>
+                            </div>
+                            <p class="cta-note">Experience firsthand how AI is transforming cybersecurity - from research to practice.</p>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../script.js"></script>
+</body>
+</html>

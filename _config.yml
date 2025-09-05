@@ -1,0 +1,51 @@
+title: "All You Need Is A Fuzzing Brain"
+description: "LLM-Powered System for Automated Vulnerability Detection and Patching - 4th Place DARPA AIxCC"
+url: "https://all-you-need-is-a-fuzzing-brain.github.io"
+baseurl: ""
+
+# GitHub Pages settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# SEO and social
+author: "All You Need Is A Fuzzing Brain Research Team"
+twitter:
+  username: # add your twitter handle
+  card: summary_large_image
+
+# Social links
+github_username: all-you-need-is-a-fuzzing-brain
+repository: "all-you-need-is-a-fuzzing-brain/all-you-need-is-a-fuzzing-brain.github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: /:title/
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /:collection/:name/
+
+# Default front matter
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "All You Need Is A Fuzzing Brain Team"

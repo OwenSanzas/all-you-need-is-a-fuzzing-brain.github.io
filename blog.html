@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html#about">About</a>
+                    <a href="blog.html" class="nav-active">Blog</a>
+                    <a href="index.html#research">Research</a>
+                    <a href="index.html#results">Results</a>
+                    <a href="index.html#team">Team</a>
+                    <a href="index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Blog Header -->
+        <section class="blog-header">
+            <div class="section-content">
+                <h1 class="blog-title">Research Blog</h1>
+                <p class="blog-subtitle">Weekly insights from our cybersecurity research journey</p>
+            </div>
+        </section>
+
+        <!-- Featured Post -->
+        <section class="featured-post">
+            <div class="section-content">
+                <div class="featured-badge">Latest Post</div>
+                <article class="post-featured">
+                    <div class="post-meta">
+                        <span class="post-date">September 8, 2025</span>
+                        <span class="post-category">Competition</span>
+                        <span class="post-readtime">10 min read</span>
+                    </div>
+                    <h2 class="post-title">
+                        <a href="posts/aixcc-final-achievements.html">                        DARPA AIxCC Final: Our Key Achievements
+                        </a>
+                    </h2>
+                    <p class="post-excerpt">
+                        A deep dive into our team's performance in the DARPA AI Cyber Challenge final round, highlighting our unique achievements and innovative strategies.
+                    </p>
+                    <div class="post-highlights">
+                        <span class="highlight-tag">🐛 28 Vulnerabilities</span>
+                        <span class="highlight-tag">⚡ Lightning Fast</span>
+                        <span class="highlight-tag">🎯 CWE Coverage</span>
+                        <span class="highlight-tag">🏗️ Giant Slayer</span>
+                    </div>
+                    <a href="posts/aixcc-final-achievements.html" class="post-link">Read Full Post →</a>
+                </article>
+
+
+
+            </div>
+        </section>
+
+        <!-- Recent Posts -->
+        <section class="upcoming-posts">
+            <div class="section-content">
+                <h2 class="section-title">Recent & Upcoming Posts</h2>
+                <div class="posts-grid">
+                    <article class="post-preview coming-soon">
+                        <div class="post-meta">
+                            <span class="post-date">September 15, 2025</span>
+                            <span class="post-category">Leaderboard</span>
+                        </div>
+                        <h3 class="post-title">
+                            FuzzingBrain Leaderboard: The First Benchmark for LLM-Powered Cybersecurity
+                        </h3>
+                        <p class="post-excerpt">
+                            Our comprehensive evaluation platform that ranks state-of-the-art language models on vulnerability detection and patching capabilities.
+                        </p>
+                        <div class="coming-soon-label">Coming Next Week</div>
+                    </article>
+
+                    <article class="post-preview coming-soon">
+                        <div class="post-meta">
+                            <span class="post-date">September 22, 2025</span>
+                            <span class="post-category">Live Agent</span>
+                        </div>
+                        <h3 class="post-title">
+                            Claude Code vs AIxCC: $0.26 and 7 Minutes to Find and Fix a Critical Vulnerability
+                        </h3>
+                        <p class="post-excerpt">
+                            Watch Claude Code autonomously discover a buffer overflow in libpng, generate a working exploit, and create a perfect patch - all in under 7 minutes for just $0.26. A practical demonstration of AI-powered cybersecurity in action.
+                        </p>
+                        <div class="coming-soon-label">Week 3</div>
+                    </article>
+
+                    <article class="post-preview coming-soon">
+                        <div class="post-meta">
+                            <span class="post-date">September 29, 2025</span>
+                            <span class="post-category">Technical Deep-dive</span>
+                        </div>
+                        <h3 class="post-title">LLM-Powered Fuzzing: Our 23-Strategy Arsenal</h3>
+                        <p class="post-excerpt">
+                            Technical breakdown of our multi-model approach to vulnerability discovery, from basic iterative refinement to advanced coverage-guided generation.
+                        </p>
+                        <div class="coming-soon-label">Week 4</div>
+                    </article>
+
+                    <article class="post-preview coming-soon">
+                        <div class="post-meta">
+                            <span class="post-date">October 6, 2025</span>
+                            <span class="post-category">Architecture</span>
+                        </div>
+                        <h3 class="post-title">Scaling to 100 VMs: FuzzingBrain's Parallel Architecture</h3>
+                        <p class="post-excerpt">
+                            How we built a massively parallel system capable of running thousands of concurrent threads across distributed infrastructure.
+                        </p>
+                        <div class="coming-soon-label">Week 5</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

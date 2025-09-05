@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuzzingBrain Leaderboard: Benchmarking LLMs for Cybersecurity - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Code</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Article Header -->
+        <article class="blog-post">
+            <div class="post-header">
+                <div class="section-content">
+                    <div class="post-meta">
+                        <span class="post-date">September 12, 2025</span>
+                        <span class="post-category">Research Tools</span>
+                        <span class="post-readtime">8 min read</span>
+                    </div>
+                    <h1 class="post-title-main">FuzzingBrain Leaderboard: The First Benchmark for LLM-Powered Cybersecurity</h1>
+                    <p class="post-subtitle">Introducing a comprehensive evaluation platform that ranks state-of-the-art language models on vulnerability detection and patching capabilities, derived from real DARPA AIxCC challenges.</p>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="post-content">
+                <div class="section-content">
+                    
+                    <!-- Introduction -->
+                    <section class="intro-section">
+                        <h2>🎯 Filling a Critical Gap</h2>
+                        <p>While the world has been buzzing about LLMs' coding abilities, a crucial question remained unanswered: <strong>How do these models perform on cybersecurity tasks?</strong> Traditional benchmarks like HumanEval or MBPP focus on general programming, but vulnerability detection and patch generation require specialized skills that aren't captured by existing evaluations.</p>
+                        
+                        <p>That's why we created the <strong>FuzzingBrain Leaderboard</strong> - the first systematic benchmark for evaluating LLMs on real-world cybersecurity challenges.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-icon">🚀</div>
+                            <div class="highlight-content">
+                                <h3>Visit the Live Leaderboard</h3>
+                                <p>Check out real-time rankings and explore detailed performance metrics at:</p>
+                                <a href="https://o2lab.github.io/FuzzingBrain-Leaderboard" class="highlight-link">o2lab.github.io/FuzzingBrain-Leaderboard →</a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What Makes It Unique -->
+                    <section class="unique-features">
+                        <h2>🌟 What Makes Our Leaderboard Different</h2>
+                        
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">🛡️</div>
+                                <h3>Security-First Focus</h3>
+                                <p>Unlike general coding benchmarks, our evaluation specifically targets vulnerability detection and patch generation - the core skills needed for AI-powered cybersecurity.</p>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-icon">🏆</div>
+                                <h3>Real Competition Data</h3>
+                                <p>Built on ~40 challenges from DARPA's AIxCC competition, featuring actual vulnerabilities in production software like curl, dropbear, and sqlite3.</p>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-icon">⚖️</div>
+                                <h3>Balanced Scoring</h3>
+                                <p>Uses AIxCC's proven scoring system: POVs worth 2 points, patches worth 6 points, reflecting the higher difficulty and value of generating working fixes.</p>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-icon">📊</div>
+                                <h3>Multi-Dimensional Analysis</h3>
+                                <p>Compare models across programming languages (C/C++, Java), challenge types (Delta-Scan, Full-Scan), and specific vulnerability categories.</p>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-icon">🔄</div>
+                                <h3>Reproducible & Fair</h3>
+                                <p>Standardized execution environment with precomputed static analysis, 1-hour time limits, and consistent infrastructure for fair comparison.</p>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-icon">🌐</div>
+                                <h3>Open & Transparent</h3>
+                                <p>Fully open-source evaluation framework with detailed methodology, allowing the community to understand and improve the benchmark.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- How It Works -->
+                    <section class="methodology-section">
+                        <h2>⚙️ How the Benchmark Works</h2>
+                        
+                        <div class="methodology-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3>Challenge Selection</h3>
+                                    <p>We curated ~40 high-quality challenges from DARPA AIxCC's three exhibition rounds, covering diverse vulnerability types and codebases.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3>Single-Model Evaluation</h3>
+                                    <p>Each model runs in isolation on a single VM, ensuring fair comparison without the complexity of our multi-model production system.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3>Standardized Environment</h3>
+                                    <p>Precomputed static analysis results and consistent infrastructure eliminate environmental variables that could skew results.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h3>Time-Limited Execution</h3>
+                                    <p>Each challenge has a 1-hour time limit for both POV generation and patching, simulating real-world time constraints.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <h3>Comprehensive Scoring</h3>
+                                    <p>Final scores calculated using AIxCC formula: <code>Total = POVs × 2 + Patches × 6</code>, with models ranked by total performance.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Key Modifications -->
+                    <section class="modifications-section">
+                        <h2>🔧 Adaptations for Fair Benchmarking</h2>
+                        
+                        <p>To make our competition system work as a fair benchmark, we made several key modifications:</p>
+                        
+                        <div class="modifications-grid">
+                            <div class="modification-item">
+                                <div class="mod-icon">🖥️</div>
+                                <h3>Single-VM Execution</h3>
+                                <p>Simplified from our massively parallel competition setup to run on a single machine with the vulnerability-triggering fuzzer provided as input.</p>
+                            </div>
+                            
+                            <div class="modification-item">
+                                <div class="mod-icon">📋</div>
+                                <h3>Precomputed Analysis</h3>
+                                <p>Static analysis results (function metadata, reachability, call paths) are precomputed and stored in JSON format to eliminate performance variations.</p>
+                            </div>
+                            
+                            <div class="modification-item">
+                                <div class="mod-icon">⏱️</div>
+                                <h3>Consistent Time Limits</h3>
+                                <p>Standardized 1-hour evaluation window per challenge, ensuring all models get equal opportunity to demonstrate their capabilities.</p>
+                            </div>
+                            
+                            <div class="modification-item">
+                                <div class="mod-icon">🎯</div>
+                                <h3>Focused Evaluation</h3>
+                                <p>Removed competition-specific optimizations like resource allocation and parallel strategy execution to focus purely on model capability.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Current Insights -->
+                    <section class="insights-section">
+                        <h2>📈 Early Findings & Insights</h2>
+                        
+                        <div class="insights-grid">
+                            <div class="insight-card">
+                                <h3>🏅 Model Performance Gaps</h3>
+                                <p>We're seeing significant performance differences between models on security tasks, with some excelling at POV generation while others perform better at patching.</p>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <h3>💻 Language Specialization</h3>
+                                <p>Certain models show clear preferences for specific programming languages, mirroring training data distributions and architectural choices.</p>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <h3>🎯 Task-Specific Strengths</h3>
+                                <p>The 2:6 POV-to-patch scoring ratio reveals interesting trade-offs - some models generate many POVs but struggle with patch quality.</p>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <h3>📊 Benchmark Validity</h3>
+                                <p>Results correlate well with our competition experience, validating that the benchmark captures real-world cybersecurity capabilities.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Interactive Features -->
+                    <section class="interface-section">
+                        <h2>🎮 Interactive Leaderboard Features</h2>
+                        
+                        <div class="interface-showcase">
+                            <div class="interface-feature">
+                                <h3>📊 Multiple View Modes</h3>
+                                <ul>
+                                    <li><strong>Overall Ranking:</strong> Complete performance across all challenges</li>
+                                    <li><strong>By Language:</strong> Filter results for C/C++ or Java-specific performance</li>
+                                    <li><strong>By Challenge Type:</strong> Compare delta-scan vs. full-scan capabilities</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="interface-feature">
+                                <h3>🏆 Dynamic Rankings</h3>
+                                <ul>
+                                    <li>Real-time score calculations with emoji indicators (🏆🥈🥉)</li>
+                                    <li>Expandable details showing POVs and patches found</li>
+                                    <li>Hover effects and smooth animations</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="interface-feature">
+                                <h3>📱 Responsive Design</h3>
+                                <ul>
+                                    <li>Works seamlessly across desktop, tablet, and mobile</li>
+                                    <li>Clean, professional interface with red/white theme</li>
+                                    <li>Fast loading with efficient data handling</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="demo-callout">
+                            <h4>💡 Try It Yourself!</h4>
+                            <p>Visit the leaderboard and experiment with different view modes to see how various models perform across different dimensions of cybersecurity capability.</p>
+                        </div>
+                    </section>
+
+                    <!-- Community Impact -->
+                    <section class="impact-section">
+                        <h2>🌍 Community Impact & Future</h2>
+                        
+                        <div class="impact-content">
+                            <h3>Why This Matters</h3>
+                            <p>The FuzzingBrain Leaderboard addresses a critical gap in AI evaluation. As organizations increasingly explore AI for cybersecurity, they need reliable metrics to choose the right models for their specific needs.</p>
+                            
+                            <div class="impact-stats">
+                                <div class="impact-stat">
+                                    <div class="stat-icon">🔬</div>
+                                    <h4>Research Acceleration</h4>
+                                    <p>Standardized evaluation enables researchers to compare approaches and identify areas for improvement in AI security capabilities.</p>
+                                </div>
+                                
+                                <div class="impact-stat">
+                                    <div class="stat-icon">🏢</div>
+                                    <h4>Industry Adoption</h4>
+                                    <p>Organizations can use benchmark results to make informed decisions about deploying AI for vulnerability detection and patch generation.</p>
+                                </div>
+                                
+                                <div class="impact-stat">
+                                    <div class="stat-icon">📚</div>
+                                    <h4>Educational Value</h4>
+                                    <p>The benchmark serves as a learning resource for understanding the current state and limitations of AI in cybersecurity.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Technical Architecture -->
+                    <section class="architecture-section">
+                        <h2>🏗️ Technical Implementation</h2>
+                        
+                        <div class="tech-details">
+                            <h3>Frontend Architecture</h3>
+                            <div class="code-snippet">
+                                <pre><code class="language-javascript">// Dynamic ranking with CSV data loading
+async function loadLeaderboardData() {
+    const response = await fetch('data/scores.csv');
+    const csvData = await response.text();
+    return parseCSV(csvData);
+}
+
+// Flexible ranking system
+function calculateRanking(data, filters = {}) {
+    return data
+        .filter(item => matchesFilters(item, filters))
+        .sort((a, b) => (b.povs * 2 + b.patches * 6) - 
+                       (a.povs * 2 + a.patches * 6));
+}</code></pre>
+                            </div>
+                            
+                            <h3>Scoring Formula</h3>
+                            <div class="formula-box">
+                                <code>Total Score = (POVs Found × 2) + (Patches Generated × 6)</code>
+                                <p>This scoring system reflects the relative difficulty and value of each task type, with patches weighted 3x higher than POVs due to their complexity and practical impact.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Get Involved -->
+                    <section class="involvement-section">
+                        <h2>🤝 Get Involved</h2>
+                        
+                        <div class="involvement-content">
+                            <p>The FuzzingBrain Leaderboard is an open, community-driven project. Here's how you can contribute:</p>
+                            
+                            <div class="involvement-options">
+                                <div class="involvement-card">
+                                    <h3>🧪 Submit Model Results</h3>
+                                    <p>Have a model you'd like to evaluate? We welcome submissions following our standardized evaluation protocol.</p>
+                                </div>
+                                
+                                <div class="involvement-card">
+                                    <h3>🔧 Improve the Benchmark</h3>
+                                    <p>Suggest new challenges, evaluation metrics, or interface improvements through our GitHub repository.</p>
+                                </div>
+                                
+                                <div class="involvement-card">
+                                    <h3>📖 Share Insights</h3>
+                                    <p>Use the leaderboard data for research, write analysis posts, or present findings at conferences - we'd love to see what you discover!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Looking Ahead -->
+                    <section class="future-section">
+                        <h2>🔮 What's Next</h2>
+                        
+                        <div class="roadmap-items">
+                            <div class="roadmap-item">
+                                <h3>📈 Expanded Challenge Set</h3>
+                                <p>Adding more diverse vulnerabilities and programming languages to create an even more comprehensive evaluation.</p>
+                            </div>
+                            
+                            <div class="roadmap-item">
+                                <h3>🔄 Regular Updates</h3>
+                                <p>Monthly evaluation runs with the latest model releases to keep the leaderboard current and relevant.</p>
+                            </div>
+                            
+                            <div class="roadmap-item">
+                                <h3>📊 Advanced Analytics</h3>
+                                <p>Deeper analysis of model performance patterns, error analysis, and detailed capability breakdowns.</p>
+                            </div>
+                            
+                            <div class="roadmap-item">
+                                <h3>🌐 Community Features</h3>
+                                <p>Enhanced collaboration tools, discussion forums, and community-contributed challenges.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Call to Action -->
+                    <section class="cta-section">
+                        <div class="cta-content">
+                            <h2>🚀 Explore the Leaderboard</h2>
+                            <p>Ready to see how different AI models stack up on cybersecurity challenges?</p>
+                            <div class="cta-buttons">
+                                <a href="https://o2lab.github.io/FuzzingBrain-Leaderboard" class="btn btn-primary">
+                                    <span>🏆</span> View Live Leaderboard
+                                </a>
+                                <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-secondary">
+                                    <span>📂</span> Access Source Code
+                                </a>
+                            </div>
+                            <p class="cta-note">Join the community advancing AI-powered cybersecurity through transparent, rigorous evaluation.</p>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../script.js"></script>
+</body>
+</html>

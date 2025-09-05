@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                    <h1>All You Need Is A Fuzzing Brain</h1>
+                </div>
+                <nav class="nav">
+                    <a href="#about">About</a>
+                    <a href="blog.html">Blog</a>
+                    <a href="#research">Research</a>
+                    <a href="#results">Results</a>
+                    <a href="#team">Team</a>
+                    <a href="#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h2 class="hero-title">LLM-Powered Vulnerability Detection</h2>
+                    <p class="hero-subtitle">An autonomous system that discovered 28 security vulnerabilities including 6 zero-days, placing 4th in DARPA's AI Cyber Challenge</p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">28</span>
+                            <span class="stat-label">Vulnerabilities Found</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">6</span>
+                            <span class="stat-label">Zero-Days</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">14</span>
+                            <span class="stat-label">Patches Applied</span>
+                        </div>
+
+                    </div>
+                    <div class="hero-buttons">
+                        <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-primary">
+                            <span>📂</span> View Source Code
+                        </a>
+                        <a href="https://o2lab.github.io/FuzzingBrain-Leaderboard" class="btn btn-secondary">
+                            <span>🏆</span> Leaderboard
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="architecture-preview">
+                        <div class="arch-box">
+                            <div class="arch-title">FuzzingBrain Architecture</div>
+                            <div class="arch-components">
+                                <div class="component">CRS Web Service</div>
+                                <div class="component">Static Analysis</div>
+                                <div class="component">Worker Services</div>
+                                <div class="component">Submission Service</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about">
+            <div class="section-content">
+                <h2 class="section-title">About Our System</h2>
+                <div class="about-grid">
+                    <div class="about-card">
+                        <div class="card-icon">🎯</div>
+                        <h3>Autonomous Detection</h3>
+                        <p>Our system automatically generates Proofs-of-Vulnerability (POVs) and produces patches for discovered security issues without human intervention.</p>
+                    </div>
+                    <div class="about-card">
+                    <div class="card-icon"><img 
+                        src="assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo"></div>                        
+                        <h3>LLM-Powered</h3>
+                        <p>Leverages 23 distinct LLM-based strategies across multiple frontier models including GPT-4, Claude, and Gemini for comprehensive analysis.</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="card-icon">⚡</div>
+                        <h3>Massively Parallel</h3>
+                        <p>Deployed across ~100 VMs with thousands of concurrent threads, enabling rapid vulnerability discovery and patch generation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research Section -->
+        <section id="research" class="research">
+            <div class="section-content">
+                <h2 class="section-title">Technical Approach</h2>
+                
+                <div class="research-content">
+                    <div class="research-overview">
+                        <h3>System Architecture</h3>
+                        <p>FuzzingBrain consists of four core services working in parallel:</p>
+                        <ul class="research-list">
+                            <li><strong>CRS Web Service:</strong> Central coordinator for task decomposition and fuzzer distribution</li>
+                            <li><strong>Static Analysis Service:</strong> Provides function metadata, reachability, and call path analysis</li>
+                            <li><strong>Worker Services:</strong> Execute parallel POV generation and patching strategies</li>
+                            <li><strong>Submission Service:</strong> Handles deduplication, SARIF validation, and bundling</li>
+                        </ul>
+                    </div>
+
+                    <div class="strategy-grid">
+                        <div class="strategy-card">
+                            <h4>POV Generation Strategies</h4>
+                            <div class="strategy-types">
+                                <span class="strategy-tag">Delta-Scan</span>
+                                <span class="strategy-tag">Full-Scan</span>
+                                <span class="strategy-tag">SARIF-Based</span>
+                            </div>
+                            <p>10 LLM-based strategies for vulnerability discovery, from basic iterative refinement to advanced multi-input generation with coverage feedback.</p>
+                        </div>
+                        
+                        <div class="strategy-card">
+                            <h4>Patching Strategies</h4>
+                            <div class="strategy-types">
+                                <span class="strategy-tag">Multi-Model</span>
+                                <span class="strategy-tag">XPatch</span>
+                                <span class="strategy-tag">Path-Aware</span>
+                            </div>
+                            <p>13 patching strategies including our novel XPatch approach that generates patches even without POVs.</p>
+                        </div>
+                    </div>
+
+                    <div class="tech-highlights">
+                        <h3>Key Technical Innovations</h3>
+                        <div class="highlight-grid">
+                            <div class="highlight">
+                                <h4>🔄 Iterative LLM Refinement</h4>
+                                <p>Multi-turn dialogue with structured feedback loops incorporating execution results and coverage data</p>
+                            </div>
+                            <div class="highlight">
+                                <h4>🎭 Multi-Model Fallback</h4>
+                                <p>Resilient architecture with automatic model switching when individual LLMs fail or reach limits</p>
+                            </div>
+                            <div class="highlight">
+                                <h4>📊 Dynamic Analysis Integration</h4>
+                                <p>Real-time coverage feedback and control-flow analysis to guide vulnerability discovery</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results" class="results">
+            <div class="section-content">
+                <h2 class="section-title">Competition Results</h2>
+                
+                <div class="results-summary">
+                    <div class="competition-badge">
+                        <div class="badge-content">
+                            <span class="badge-rank">4th Place</span>
+                            <span class="badge-competition">DARPA AI Cyber Challenge</span>
+                            <span class="badge-teams">out of 7 finalists</span>
+                        </div>
+                    </div>
+                    
+                    <div class="results-grid">
+                        <div class="result-card highlight-card">
+                            <div class="result-number">28</div>
+                            <div class="result-label">Total Vulnerabilities</div>
+                            <div class="result-detail">Discovered across real-world C and Java projects</div>
+                        </div>
+                        
+                        <div class="result-card highlight-card">
+                            <div class="result-number">6</div>
+                            <div class="result-label">Zero-Day Discoveries</div>
+                            <div class="result-detail">Previously unknown vulnerabilities</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-number">14</div>
+                            <div class="result-label">Successful Patches</div>
+                            <div class="result-detail">Validated fixes that preserve functionality</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="result-number">60</div>
+                            <div class="result-label">Total Challenges</div>
+                            <div class="result-detail">Final competition round</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="performance-insights">
+                    <h3>Performance Insights</h3>
+                    <div class="insight-grid">
+                        <div class="insight">
+                            <h4>⏱️ Speed</h4>
+                            <p>Most vulnerabilities detected within the first 30 minutes of analysis</p>
+                        </div>
+                        <div class="insight">
+                            <h4>🎯 Effectiveness</h4>
+                            <p>LLM-based strategies discovered nearly all POVs, vastly outperforming traditional fuzzing</p>
+                        </div>
+                        <div class="insight">
+                            <h4>🏗️ Scalability</h4>
+                            <p>Successfully processed 50+ fuzzers per project across multiple sanitizer configurations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="team" class="team">
+            <div class="section-content">
+                <h2 class="section-title">Research Team</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <h3>Ze Sheng</h3>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Qingxiao Xu</h3>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Jianwei Huang</h3>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Matthew Woodcock</h3>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Heqing Huang</h3>
+                        <p class="team-affiliation">City University of Hong Kong</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Alastair F. Donaldson</h3>
+                        <p class="team-affiliation">Imperial College London</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Guofei Gu</h3>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                    <div class="team-member">
+                        <h3>Jeff Huang</h3>
+                        <p class="team-role">Team Lead</p>
+                        <p class="team-affiliation">Texas A&M University</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code & Resources Section -->
+        <section id="code" class="code-section">
+            <div class="section-content">
+                <h2 class="section-title">Open Source & Resources</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <div class="resource-icon">📂</div>
+                        <h3>FuzzingBrain CRS</h3>
+                        <p>Complete Cyber Reasoning System implementation with all 23 LLM-based strategies</p>
+                        <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="resource-link">View on GitHub →</a>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-icon">🏆</div>
+                        <h3>LLM Leaderboard</h3>
+                        <p>Benchmark comparing state-of-the-art LLMs on vulnerability detection and patching tasks</p>
+                        <a href="https://o2lab.github.io/FuzzingBrain-Leaderboard" class="resource-link">View Leaderboard →</a>
+                    </div>
+                    <div class="resource-card">
+                        <div class="resource-icon">📄</div>
+                        <h3>Technical Paper</h3>
+                        <p>Detailed technical description of our CRS with emphasis on LLM-powered components</p>
+                        <a href="fuzzingbrain-tech-report.pdf" class="resource-link">Read Paper →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Open source research advancing automated vulnerability discovery</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
