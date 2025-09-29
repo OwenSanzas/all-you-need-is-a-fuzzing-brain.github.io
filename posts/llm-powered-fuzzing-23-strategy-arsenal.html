@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Powered Fuzzing: Our 23-Strategy Arsenal - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <meta name="description" content="A practical breakdown of our 23 LLM-powered strategies for vulnerability discovery and patching: 10 discovery and 13 patching techniques orchestrated across multiple models with static and dynamic analysis, plus validation gates." />
+    <meta name="robots" content="index,follow" />
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../blog.html" class="nav-active">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Article -->
+        <article class="blog-post">
+            <div class="post-header">
+                <div class="section-content">
+                    <div class="post-meta">
+                        <span class="post-date">September 29, 2025</span>
+                        <span class="post-category">Technical Deep-dive</span>
+                        <span class="post-readtime">10 min read</span>
+                    </div>
+                    <h1 class="post-title-main">LLM-Powered Fuzzing: Our 23-Strategy Arsenal</h1>
+                    <p class="post-subtitle">A field-tested playbook combining <strong>10 discovery</strong> and <strong>13 patching</strong> strategies, orchestrated across multiple LLMs and reinforced by static analysis, sanitizers, and rigorous validation. See the <a href="../fuzzingbrain-tech-report.pdf">technical report</a> for the full design and data.</p>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <div class="section-content">
+
+                    <!-- Overview -->
+                    <section>
+                        <h2>🧭 Strategy Overview</h2>
+                        <div class="demo-highlights">
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🔎</div>
+                                <div>
+                                    <h3>10 Discovery Strategies</h3>
+                                    <p>Delta-scan and full-scan modes, SARIF-guided refinement, call-path targeting, and input synthesis blended with sanitizers and coverage to produce fast, verifiable POVs.</p>
+                                </div>
+                            </div>
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🩹</div>
+                                <div>
+                                    <h3>13 Patching Strategies</h3>
+                                    <p>From minimal, path-aware guards to structural refactors and <strong>XPatch</strong> (patching without a POV) — all gated by compile, test, and POV-negation checks.</p>
+                                </div>
+                            </div>
+                            <div class="highlight-item">
+                                <div class="highlight-icon">🎭</div>
+                                <div>
+                                    <h3>Multi-Model Orchestration</h3>
+                                    <p>Routing and fallback across Anthropic, OpenAI, and Google models, with quotas, backoff, and success-rate tracking to avoid cascade failures.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Discovery Strategies -->
+                    <section class="demo-overview">
+                        <h2>🔎 Discovery Strategies (10)</h2>
+                        <p>Discovery aims to produce a robust proof-of-vulnerability (POV). Strategies combine static signals (SARIF, call graphs, reachability) with dynamic feedback (sanitizers, coverage) to steer LLMs toward executable triggers.</p>
+
+                        <div class="implications-grid">
+                            <div class="implication-card">
+                                <h3>1) Delta-Scan (Patch Diff Focus)</h3>
+                                <p>Prioritize files and functions touched by recent changes. Parse diffs, map to call paths, and have the LLM hypothesize likely CWE classes and inputs that traverse the modified path.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>2) Full-Scan (Hotspot Ranking)</h3>
+                                <p>Rank all files using heuristics (unsafe APIs, complexity, historical bug density). Use LLM to draft targeted test harnesses per hotspot with auto-build/run loops.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>3) SARIF-Guided Refinement</h3>
+                                <p>Ingest SARIF from static analyzers. For each finding, ask the LLM to convert the warning into a runnable POV with concrete inputs, then validate under ASAN/UBSAN.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>4) Call-Path Targeting</h3>
+                                <p>Generate candidate input shapes that traverse specific call sequences to the sink. LLM reasons about required invariants and state to reach the vulnerable site.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>5) Taint-Spot Exploration</h3>
+                                <p>Surface user-controlled data flows (CLI args, HTTP params, file parsers). LLM proposes minimally valid inputs that survive parsing and reach memory-unsafe operations.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>6) Sanitizer-Driven Generalization</h3>
+                                <p>Cluster sanitizer crashes and let the LLM generalize a stable repro from noisy stack traces. Convert flakey crashes into deterministic POVs.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>7) Grammar-Guided Input Synthesis</h3>
+                                <p>Ask the LLM to emit a minimal grammar/schema for inputs (e.g., PNG, JSON). Mutate within the grammar to preserve reachability while stressing edge counts.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>8) Coverage-Loop Refinement</h3>
+                                <p>Instrument harnesses, report missed branches back to the LLM, and request inputs that flip specific predicates or increase rare-edge hit counts.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>9) Exception-Mining (Java)</h3>
+                                <p>Exploit language-level stack traces and messages to shortcut to faulting APIs. Request inputs that transform a handled exception into a crash or integrity violation.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>10) Pattern Replay</h3>
+                                <p>Leverage a library of historical bug patterns (e.g., off-by-one in image decoders). LLM adapts known triggers to the current codebase with type- and path-aware tweaks.</p>
+                            </div>
+                        </div>
+
+                        <div class="github-box">
+                            <div class="github-icon">📄</div>
+                            <div class="github-content">
+                                <h3>Design Notes</h3>
+                                <p>Discovery treats model output as untrusted. Every candidate is compiled and executed under sanitizers; only deterministic repros graduate to POVs. Details in our <a href="../fuzzingbrain-tech-report.pdf">technical report</a>.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Patching Strategies -->
+                    <section class="performance-metrics">
+                        <h2>🩹 Patching Strategies (13)</h2>
+                        <p>Patches must compile, negate the POV, and preserve functionality. We bias toward minimal, auditable diffs unless the LLM justifies a larger refactor. Each strategy runs through the same validation gates.</p>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <h3>1) Minimal Guard</h3>
+                                <p>Add precondition checks (bounds, null, state) at the faulting site with early returns or error codes.</p>
+                                <pre><code class="language-c">// Before
+memcpy(dst, src, len);
+// After
+if (len &gt; dst_size) return ERR_INVALID_SIZE;
+memcpy(dst, src, len);</code></pre>
+                            </div>
+                            <div class="metric-card">
+                                <h3>2) Path-Aware Fix</h3>
+                                <p>Harden only the failing path: guard specific states along the call-chain that lead to the sink; avoid broad behavioral changes.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>3) Size-Checked Copy</h3>
+                                <p>Replace unsafe copies with bounded variants (`strncpy`, `memcpy_s`) or explicit length checks with clear error handling.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>4) Input Validation</h3>
+                                <p>Enforce strict parsing and reject malformed structures early (magic bytes, lengths, indices, state machines).</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>5) Signedness & Overflow</h3>
+                                <p>Normalize types, add overflow checks on arithmetic, and clamp to safe ranges before allocations or indexing.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>6) Resource Safety</h3>
+                                <p>Fix leaks and double-frees by clarifying lifetime rules; prefer RAII/`defer`-like scopes where available.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>7) Concurrency Guard</h3>
+                                <p>Introduce minimal synchronization (atomic flags, fine-grained locks) to eliminate races causing memory corruption or TOCTOU.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>8) Defensive Defaults</h3>
+                                <p>On parser or API failure, return safe defaults rather than partially initialized structures.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>9) API-Level Replacement</h3>
+                                <p>Swap to safer APIs (e.g., `snprintf` over `sprintf`), or centralize validation in a wrapper used across call sites.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>10) State Machine Tightening</h3>
+                                <p>For complex formats, enforce valid transitions and terminal states to prevent invalid memory access.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>11) Spec-Conformant Refactor</h3>
+                                <p>Where minimal guards aren’t enough, perform small refactors that align with spec rules while preserving public APIs.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>12) Regression-Aware Patch</h3>
+                                <p>Augment patches with new unit tests derived from the POV and near-miss inputs to prevent reintroduction.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>13) XPatch (No-POV Fix)</h3>
+                                <p>When a POV cannot be produced, synthesize a patch from high-confidence static findings plus local invariants; validate by negative testing and coverage invariants.</p>
+                                <pre><code class="language-java">// Example (Java) – safer length check
+public byte[] read(byte[] buf, int len) {
+    if (buf == null || len &lt; 0 || len &gt; buf.length) {
+        throw new IllegalArgumentException("invalid length");
+    }
+    // ... existing logic ...
+}</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Orchestration & Validation -->
+                    <section class="demo-overview">
+                        <h2>🎛️ Orchestration & Validation Gates</h2>
+                        <div class="architecture-overview">
+                            <div class="service-component">
+                                <h3>LLM Router</h3>
+                                <pre><code class="language-python">class LLMRouter:
+    MODELS = ["claude", "gpt", "gemini"]
+
+    async def call(self, prompt, validate):
+        for name in self.MODELS:
+            try:
+                out = await call_model(name, prompt)
+                if validate(out):
+                    return out
+            except (RateLimit, Overload):
+                await backoff()
+                continue
+        raise RuntimeError("All models failed")</code></pre>
+                                <p>Per-model quotas, exponential backoff, and success-rate telemetry avoid stampede failures and control cost.</p>
+                            </div>
+                            <div class="service-component">
+                                <h3>Validation Gates</h3>
+                                <ul>
+                                    <li>Compile under sanitizers; reject non-deterministic crashes</li>
+                                    <li>POV must be deterministic (N≥3 runs)</li>
+                                    <li>Patch must negate POV and pass regression</li>
+                                    <li>Cost/latency budgets enforced per strategy</li>
+                                </ul>
+                            </div>
+                            <div class="service-component">
+                                <h3>Reproducibility</h3>
+                                <p>Per-job directories (<code>/tmp/job_{id}/...</code>) and artifact bundles (inputs, logs, patches) make results auditable, aligning with our <a href="../fuzzingbrain-tech-report.pdf">report</a>.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Lessons -->
+                    <section class="implications">
+                        <h2>🧪 What Worked (and What Didn’t)</h2>
+                        <div class="implications-grid">
+                            <div class="implication-card highlight">
+                                <h3>Start Minimal</h3>
+                                <p>Minimal guards neutralize most memory errors without side effects; escalate to refactors only when justified by failing regression tests.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>Cache Static Facts</h3>
+                                <p>Precomputed call graphs and symbol maps make strategy runs predictable and cheap at scale.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>Feedback Loops Matter</h3>
+                                <p>Coverage- and sanitizer-driven hints dramatically reduce LLM trial-and-error during discovery.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>POV-First — Except When Not</h3>
+                                <p>XPatch salvages high-confidence findings when a deterministic POV is elusive, but requires tighter negative tests.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CTA -->
+                    <section class="cta-section">
+                        <div class="cta-content">
+                            <h2>📚 Dive Deeper</h2>
+                            <p>The full system, data, and ablations are documented in our technical report and open-source CRS.</p>
+                            <div class="cta-buttons">
+                                <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-primary"><span>📂</span> View Source Code</a>
+                                <a href="../fuzzingbrain-tech-report.pdf" class="btn btn-secondary"><span>📄</span> Read Technical Report</a>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../script.js"></script>
+</body>
+</html>
+

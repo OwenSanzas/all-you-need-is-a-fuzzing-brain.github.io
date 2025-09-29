@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scaling to 100 VMs: FuzzingBrain's Parallel Architecture - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <meta name="description" content="How FuzzingBrain scales across ~100 VMs with four core services, multi-model LLM orchestration, and robust validation to process thousands of concurrent jobs and 100K+ LLM requests." />
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Code</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Article Header -->
+        <article class="blog-post">
+            <div class="post-header">
+                <div class="section-content">
+                    <div class="post-meta">
+                        <span class="post-date">October 6, 2025</span>
+                        <span class="post-category">Architecture</span>
+                        <span class="post-readtime">12 min read</span>
+                    </div>
+                    <h1 class="post-title-main">Scaling to 100 VMs: FuzzingBrain's Parallel Architecture</h1>
+                    <p class="post-subtitle">Under the hood of our DARPA AIxCC system: four core services coordinating thousands of concurrent jobs across ~100 VMs, executing 100K+ LLM requests with robust validation and graceful degradation. See our <a href="../fuzzingbrain-tech-report.pdf">technical report</a> for the full design.</p>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="post-content">
+                <div class="section-content">
+
+                    <!-- Scale Snapshot -->
+                    <section class="results-hero">
+                        <div class="results-banner">
+                            <h2>📊 Scale Snapshot</h2>
+                            <div class="results-stats">
+                                <div class="result-stat">
+                                    <div class="stat-icon">🖥️</div>
+                                    <div class="stat-value">~100</div>
+                                    <div class="stat-label">VMs</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">🧵</div>
+                                    <div class="stat-value">Thousands</div>
+                                    <div class="stat-label">Concurrent Jobs</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">🧠</div>
+                                    <div class="stat-value">100K+</div>
+                                    <div class="stat-label">LLM Requests</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">🧪</div>
+                                    <div class="stat-value">50+</div>
+                                    <div class="stat-label">Fuzzers/Project</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Architecture Overview -->
+                    <section class="demo-overview">
+                        <h2>🏗️ Four Core Services</h2>
+                        <p>FuzzingBrain decomposes the security workflow into four independently scalable services, each with clear contracts and idempotent operations.</p>
+
+                        <div class="architecture-overview">
+                            <div class="service-component">
+                                <h3>🌐 CRS Web Service</h3>
+                                <p><strong>Role:</strong> Central coordinator. Decomposes each challenge into 50+ fuzzer-target jobs per sanitizer configuration, tracks state, and assigns work.</p>
+                                <p><strong>Scale Tactics:</strong> Sharded queues, idempotent job tokens, and backpressure when workers saturate.</p>
+                            </div>
+                            <div class="service-component">
+                                <h3>🔍 Static Analysis Service</h3>
+                                <p><strong>Role:</strong> Precomputes reachability, call paths, and function metadata. Exposes results as JSON to keep workers fast and stateless.</p>
+                                <p><strong>Scale Tactics:</strong> Aggressive caching and timeouts on oversized projects; results reused across strategies.</p>
+                            </div>
+                            <div class="service-component">
+                                <h3>⚡ Worker Services</h3>
+                                <p><strong>Role:</strong> Execute discovery and patch strategies in parallel, each in an isolated workspace.</p>
+                                <p><strong>Scale Tactics:</strong> Per-job temp dirs, unique artifact paths, and limited concurrency per worker to avoid I/O contention.</p>
+                            </div>
+                            <div class="service-component">
+                                <h3>📤 Submission Service</h3>
+                                <p><strong>Role:</strong> Validates and deduplicates POVs/patches, bundles SARIF, and prepares submissions.</p>
+                                <p><strong>Scale Tactics:</strong> Bloom-style fast checks + deep validation on candidates; multi-LLM consensus for near-duplicate detection.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Scheduling & Concurrency -->
+                    <section class="methodology-section">
+                        <h2>⏱️ Scheduling for Throughput</h2>
+                        <div class="methodology-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3>Shard by Fuzzer × Sanitizer</h3>
+                                    <p>Jobs split along <em>fuzzer-target × sanitizer</em> axes balance CPU-bound compilation with I/O-bound LLM calls.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3>Idempotent Job Tokens</h3>
+                                    <p>Jobs can be retried or stolen without double-submission; workers record atomic checkpoints.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3>Backpressure & Timeouts</h3>
+                                    <p>Adaptive concurrency caps and exponential backoff prevent model rate-limit cascades and queue explosions.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- LLM Orchestration -->
+                    <section class="performance-metrics">
+                        <h2>🎭 Multi-Model Orchestration</h2>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <h3>Routing & Fallback</h3>
+                                <pre><code class="language-python">class LLMRouter:
+    MODELS = ["claude", "gpt", "gemini"]
+
+    async def call(self, prompt, validate):
+        for name in self.MODELS:
+            try:
+                out = await call_model(name, prompt)
+                if validate(out):
+                    return out
+            except (RateLimit, Overload):
+                await backoff()
+                continue
+        raise RuntimeError("All models failed")</code></pre>
+                                <p>This simple pattern becomes non-trivial at scale; backoff and per-model quotas avoid failure cascades.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>Validation Gates</h3>
+                                <p>Workers treat LLM outputs as untrusted: compile, run under sanitizers, and verify POV negation for patches before promotion.</p>
+                            </div>
+                            <div class="metric-card">
+                                <h3>Observability</h3>
+                                <p>Per-model success rates, token costs, and latency distributions drive dynamic routing and cost-aware throttling.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Hard-Learned Lessons -->
+                    <section class="implications">
+                        <h2>🛠️ Hard-Learned Scale Lessons</h2>
+                        <div class="implications-grid">
+                            <div class="implication-card highlight">
+                                <h3>Process Isolation Prevents Races</h3>
+                                <p>Unique per-job paths (<code>/tmp/job_{id}/...</code>) eliminated cross-strategy file clobbering and nondeterminism.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>Locks Are Not a Silver Bullet</h3>
+                                <p>We removed coarse locks in favor of lock-free maps and message passing to avoid deadlocks during peak submission windows.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>Static Analysis Must Be Cached</h3>
+                                <p>Precomputing call graphs and reachability shaved minutes per job and made performance predictable across VMs.</p>
+                            </div>
+                            <div class="implication-card">
+                                <h3>Backoff Beats Fallback Storms</h3>
+                                <p>Without exponential backoff, rate-limit bursts on one model stampede the next. Adaptive caps stabilized throughput.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- From Competition to Practice -->
+                    <section class="future-section">
+                        <h2>🚀 From AIxCC to Real-World Workloads</h2>
+                        <div class="roadmap-items">
+                            <div class="roadmap-item">
+                                <h3>CI/CD Integration</h3>
+                                <pre><code class="language-yaml">security_scan:
+  - static_analysis: precompute
+  - llm_discovery: parallel_strategies
+  - patch_generation: consensus
+  - verification: pov_negation + regression
+  - deploy: gated</code></pre>
+                                <p>The same decomposition scales to monorepos and nightly scans.</p>
+                            </div>
+                            <div class="roadmap-item">
+                                <h3>Cost Controls</h3>
+                                <p>Token budgets and model tiers per strategy keep API costs manageable under load.</p>
+                            </div>
+                            <div class="roadmap-item">
+                                <h3>Reproducibility</h3>
+                                <p>Seeded runs and artifact bundles (inputs, logs, patches) make results auditable for security review.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CTA -->
+                    <section class="cta-section">
+                        <div class="cta-content">
+                            <h2>🔍 Explore the Architecture</h2>
+                            <p>Our open-source CRS demonstrates this architecture end-to-end — from job scheduling to patch validation.</p>
+                            <div class="cta-buttons">
+                                <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-primary">
+                                    <span>📂</span> View Source Code
+                                </a>
+                                <a href="../fuzzingbrain-tech-report.pdf" class="btn btn-secondary">
+                                    <span>📄</span> Read Technical Report
+                                </a>
+                            </div>
+                            <p class="cta-note">Validated in competition: thousands of concurrent jobs, robust outputs, predictable costs.</p>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>© 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">🏆 DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../script.js"></script>
+</body>
+</html>
+
