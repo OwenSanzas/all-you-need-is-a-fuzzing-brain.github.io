@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARIF Processing - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .docs-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 2rem; gap: 2rem; }
+        .docs-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 100px; height: fit-content; }
+        .docs-sidebar h3 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-bottom: 1rem; }
+        .docs-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .docs-sidebar li { margin-bottom: 0.5rem; }
+        .docs-sidebar a { display: block; padding: 0.5rem 1rem; color: #fff; text-decoration: none; border-radius: 6px; transition: background-color 0.2s; }
+        .docs-sidebar a:hover { background-color: #1a1a2e; }
+        .docs-sidebar a.active { background-color: #6366f1; color: #fff; }
+        .docs-content { flex: 1; min-width: 0; }
+        .docs-content h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .docs-content h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #333; }
+        .docs-content h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .docs-content p { line-height: 1.7; margin-bottom: 1rem; }
+        .docs-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem 0; }
+        .docs-content pre { background-color: #1a1a2e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        .docs-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .docs-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .docs-content th, .docs-content td { padding: 0.75rem; text-align: left; border: 1px solid #333; }
+        .docs-content th { background-color: #1a1a2e; }
+        .docs-content ul, .docs-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .docs-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../documentation.html" class="nav-active">Documentation</a>
+                    <a href="../quickstart.html">Quickstart</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="docs-container">
+            <aside class="docs-sidebar">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="../documentation.html">CRS Overview</a></li>
+                    <li><a href="strategy_overview.html">Strategy Overview</a></li>
+                    <li><a href="pov_strategies.html">POV Strategies</a></li>
+                    <li><a href="patch_strategies.html">Patch Strategies</a></li>
+                    <li><a href="sarif_processing.html" class="active">SARIF Processing</a></li>
+                    <li><a href="task_processing.html">Task Processing</a></li>
+                    <li><a href="x_strategies.html">X Strategies</a></li>
+                </ul>
+            </aside>
+
+            <main class="docs-content">
+                <h1>SARIF PoV Strategy</h1>
+                <img src="images/sarif_strategy.png" alt="SARIF Strategy">
+                <p><em>This diagram illustrates our SARIF processing strategy.</em></p>
+                <div id="content"></div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>&copy; 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const markdown = `This document describes the PoV (Proof of Vulnerability) generation strategy that leverages SARIF reports to create targeted vulnerability exploits. The system employs a multi-phase approach, where each phase represents a different strategy for generating PoVs based on the information extracted from SARIF reports.
+
+## Parsing & Reachability Analysis
+
+Upon receiving a SARIF report, the system first parses its metadata, including stack information, vulnerability types, vulnerability locations, function information, and other contextual data.
+
+Based on this information, we identify potential vulnerable functions and use static analysis services to determine whether there exists a fuzzer that can reach these vulnerable functions from its fuzzer input entry point.
+
+If reachable, these functions are included in the call graph and can proceed to the next processing step.
+
+If not reachable, LLM analysis is employed for enhanced parsing.
+
+## PoV Processing Phases
+
+The PoV processing is divided into 3 phases:
+
+### Phase 0: Universal Scanning Strategy
+
+This phase employs a broad-spectrum approach that does not rely on specific vulnerability type classification. It creates a general prompt incorporating the fuzzer code, sanitizer information, and reachable target functions.
+
+**Key Characteristics:**
+- Language-agnostic approach
+- Sanitizer-aware prompt generation
+- Serves as reliable fallback strategy
+- Fast execution with reasonable coverage
+
+### Phase 1: Vulnerability Category-Based Strategy
+
+This phase leverages specific vulnerability categories extracted from SARIF reports to create highly targeted PoVs. It matches CWE classifications against predefined vulnerability categories.
+
+**Supported C Vulnerability Categories:**
+- CWE-119: Buffer Overflow
+- CWE-416: Use After Free
+- CWE-476: NULL Pointer Dereference
+- CWE-190: Integer Overflow
+- CWE-787: Out-of-bounds Write
+- CWE-125: Out-of-bounds Read
+- And more...
+
+**Supported Java Vulnerability Categories:**
+- CWE-22: Path Traversal
+- CWE-77: Command Injection
+- CWE-89: SQL Injection
+- CWE-502: Deserialization
+- CWE-918: Server-Side Request Forgery
+- And more...
+
+### Phase 2: Call Path-Based Strategy
+
+This phase performs deep code flow analysis using actual execution paths from the fuzzer entry point to vulnerable functions. It extracts call paths from static analysis services and generates PoVs that specifically navigate through these execution flows.
+
+**Key Features:**
+- Path-aware test case generation
+- Analysis of intermediate function requirements
+- Navigation through complex call chains
+- Handling of path-specific conditions
+`;
+
+        document.getElementById('content').innerHTML = marked.parse(markdown);
+    </script>
+</body>
+</html>

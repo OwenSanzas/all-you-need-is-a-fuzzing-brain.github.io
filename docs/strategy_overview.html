@@ -1,12 +1,94 @@
----
-layout: docs
-title: Strategy Overview
-permalink: /docs/strategy_overview.html
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Overview - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .docs-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 2rem; gap: 2rem; }
+        .docs-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 100px; height: fit-content; }
+        .docs-sidebar h3 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-bottom: 1rem; }
+        .docs-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .docs-sidebar li { margin-bottom: 0.5rem; }
+        .docs-sidebar a { display: block; padding: 0.5rem 1rem; color: #fff; text-decoration: none; border-radius: 6px; transition: background-color 0.2s; }
+        .docs-sidebar a:hover { background-color: #1a1a2e; }
+        .docs-sidebar a.active { background-color: #6366f1; color: #fff; }
+        .docs-content { flex: 1; min-width: 0; }
+        .docs-content h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .docs-content h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #333; }
+        .docs-content h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .docs-content p { line-height: 1.7; margin-bottom: 1rem; }
+        .docs-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem 0; }
+        .docs-content pre { background-color: #1a1a2e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        .docs-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .docs-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .docs-content th, .docs-content td { padding: 0.75rem; text-align: left; border: 1px solid #333; }
+        .docs-content th { background-color: #1a1a2e; }
+        .docs-content ul, .docs-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .docs-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../documentation.html" class="nav-active">Documentation</a>
+                    <a href="../quickstart.html">Quickstart</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
 
-# CRS Strategy Overview: Framework and Models
+        <div class="docs-container">
+            <aside class="docs-sidebar">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="../documentation.html">CRS Overview</a></li>
+                    <li><a href="strategy_overview.html" class="active">Strategy Overview</a></li>
+                    <li><a href="pov_strategies.html">POV Strategies</a></li>
+                    <li><a href="patch_strategies.html">Patch Strategies</a></li>
+                    <li><a href="sarif_processing.html">SARIF Processing</a></li>
+                    <li><a href="task_processing.html">Task Processing</a></li>
+                    <li><a href="x_strategies.html">X Strategies</a></li>
+                </ul>
+            </aside>
 
-💡This document describes the common framework, constants, and model configurations shared across all CRS POV generation strategies.
+            <main class="docs-content" id="content"></main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>&copy; 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const markdown = `# CRS Strategy Overview: Framework and Models
+
+This document describes the common framework, constants, and model configurations shared across all CRS POV generation strategies.
 
 
 ## Strategy Inventory
@@ -60,16 +142,16 @@ Here shows all available strategies in our CRS.
 
 ### Strategy Execution Flow
 
-```
+\`\`\`
 Task Type Detection
        ↓
 Basic Phase (xs*), Advanced Phase (as*) ──→ POV Found ──→ Patch Generation
        ↓                                                        ↓
-                                                          patch*_[type].py                              
-   Still No POV                       
-       ↓                              
+                                                          patch*_[type].py
+   Still No POV
+       ↓
 Emergency XPatch ──→ Direct Patching
-```
+\`\`\`
 
 ## Supported LLM Models
 | Model | Vendor | Knowledge Cutoff | Model Family |
@@ -104,13 +186,13 @@ Emergency XPatch ──→ Direct Patching
 
 The default model selection prioritizes Anthropic's Claude models:
 
-```python
+\`\`\`python
 MODELS = [
     CLAUDE_MODEL,           # claude-3-7-sonnet-latest
-    CLAUDE_MODEL_OPUS_4,    # claude-opus-4-20250514  
+    CLAUDE_MODEL_OPUS_4,    # claude-opus-4-20250514
     CLAUDE_MODEL_35         # claude-3-5-sonnet-20241022
 ]
-```
+\`\`\`
 
 **Selection Rationale:**
 - **Primary**: Claude 3.5 Sonnet Latest - Balanced performance and reasoning
@@ -137,55 +219,9 @@ MODELS = [
 ### 4. Phase Differentiation
 - **Basic Phase (xs*)**: Rapid initial POV generation attempts
 - **Advanced Phase (as*)**: Sophisticated multi-context analysis
+`;
 
-
-# Strategy Execution Parameters
-
-All CRS strategies accept a standardized set of command-line parameters for configuration and execution control:
-
-## Parameter Reference
-
-| Parameter | Type | Required | Description | Example Value |
-|-----------|------|----------|-------------|---------------|
-| **Basic Parameters** | | | | |
-| `fuzzer_path` | Positional | Yes | Path to the target fuzzer executable | `/out/libpng_read_fuzzer` |
-| `project_name` | Positional | Yes | Name of the target project | `libpng` |
-| `focus` | Positional | Yes | Focus area or component | `example-libpng` |
-| `language` | Positional | Yes | Programming language of target | `c`, `java`, `cpp` |
-| **POV Generation Control** | | | | |
-| `--pov-metadata-dir` | String | Yes | Directory for POV metadata storage | `successful_povs_0` |
-| `--max-iterations` | Integer | No | Maximum POV generation attempts | `3`, `4`, `5` |
-| `--fuzzing-timeout` | Integer | No | Timeout for individual fuzzing operations (minutes) | `45`, `30`, `60` |
-| `--pov-phase` | Integer | No | Current phase number (Advanced strategies only) | `0`, `1`, `2`, `3` |
-| **Task Configuration** | | | | |
-| `--full-scan` (deprecated) | Boolean | No | Enable full scan mode | `true`, `false` |
-| `--do-patch` (deprecated) | Boolean | No | Enable patching after POV discovery | `true`, `false` |
-| `--check-patch-success` | Flag | No | Verify patch effectiveness | N/A |
-| **Strategy Behavior** | | | | |
-| `--use-coverage` | Boolean | No | Enable coverage-guided generation | `true`, `false` |
-| `--enable-static-analysis` | Boolean | No | Use static analysis for context | `true`, `false` |
-| `--multi-model` | Boolean | No | Use multiple LLM models | `true`, `false` |
-
-## Parameter Usage by Strategy Type
-
-| Strategy Type | Core Parameters | Advanced Parameters | Specialized Parameters |
-|---------------|----------------|-------------------|----------------------|
-| **Basic POV (xs*)** | All basic parameters | `--max-iterations` | `--use-coverage` |
-| **Advanced POV (as*)** | All basic parameters | All advanced parameters | All specialized parameters |
-| **Patch Strategies** | Basic + `--do-patch=true` | `--fuzzing-timeout` | `--check-patch-success` |
-| **Emergency (XPatch)** | Basic parameters only | N/A | Custom XPatch flags |
-
-## Dynamic Parameter Assignment
-
-Parameters are dynamically assigned based on execution context:
-
-### Basic Phase Assignment
-```bash
-python3 xs0_delta.py \
-   /out/libpng_read_fuzzer \
-   libpng \
-   example-libpng \
-   c \
-   --pov-metadata-dir successful_povs_0 \
-   --check-patch-success
-···
+        document.getElementById('content').innerHTML = marked.parse(markdown);
+    </script>
+</body>
+</html>

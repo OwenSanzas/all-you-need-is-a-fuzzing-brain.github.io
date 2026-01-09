@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POV Strategies - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .docs-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 2rem; gap: 2rem; }
+        .docs-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 100px; height: fit-content; }
+        .docs-sidebar h3 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-bottom: 1rem; }
+        .docs-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .docs-sidebar li { margin-bottom: 0.5rem; }
+        .docs-sidebar a { display: block; padding: 0.5rem 1rem; color: #fff; text-decoration: none; border-radius: 6px; transition: background-color 0.2s; }
+        .docs-sidebar a:hover { background-color: #1a1a2e; }
+        .docs-sidebar a.active { background-color: #6366f1; color: #fff; }
+        .docs-content { flex: 1; min-width: 0; }
+        .docs-content h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .docs-content h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #333; }
+        .docs-content h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .docs-content p { line-height: 1.7; margin-bottom: 1rem; }
+        .docs-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem 0; }
+        .docs-content pre { background-color: #1a1a2e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        .docs-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .docs-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .docs-content th, .docs-content td { padding: 0.75rem; text-align: left; border: 1px solid #333; }
+        .docs-content th { background-color: #1a1a2e; }
+        .docs-content ul, .docs-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .docs-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../documentation.html" class="nav-active">Documentation</a>
+                    <a href="../quickstart.html">Quickstart</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="docs-container">
+            <aside class="docs-sidebar">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="../documentation.html">CRS Overview</a></li>
+                    <li><a href="strategy_overview.html">Strategy Overview</a></li>
+                    <li><a href="pov_strategies.html" class="active">POV Strategies</a></li>
+                    <li><a href="patch_strategies.html">Patch Strategies</a></li>
+                    <li><a href="sarif_processing.html">SARIF Processing</a></li>
+                    <li><a href="task_processing.html">Task Processing</a></li>
+                    <li><a href="x_strategies.html">X Strategies</a></li>
+                </ul>
+            </aside>
+
+            <main class="docs-content">
+                <h1>POV Strategies</h1>
+                <img src="images/basic_pov_strategy.png" alt="Basic POV Strategy">
+                <p><em>This diagram illustrates our basic strategy template, which serves as the foundation for all POV strategies.</em></p>
+                <div id="content"></div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>&copy; 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const markdown = `In this section, the detailed implementation of each CRS strategy will be examined. This section will use \`xs0_delta.py\` as the foundational strategy for introduction, as all other strategies are developed based on this basic strategy. Therefore, other strategies will be described in detail focusing on their improvements and modifications.
+
+For a general overview of each strategy's purpose and classification, please refer to the Strategy Overview section.
+
+
+## Introduction
+The POV (Proof-of-Vulnerability) strategies form the core of CRS's vulnerability detection capabilities. These strategies leverage Large Language Models (LLMs) to analyze code changes, understand vulnerability patterns, and generate targeted inputs that can trigger security vulnerabilities through existing fuzzers.
+
+
+
+## xs0_delta.py
+The xs0_delta.py strategy establishes the foundational approach for delta-based vulnerability detection in CRS. As the baseline implementation, it defines the core patterns and methodologies that all subsequent strategies inherit and extend.
+
+The strategy operates entirely through text-based dialogue with LLMs, establishing a clean separation between analysis logic and execution environment:
+
+\`\`\`python
+# Core interaction pattern
+messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+messages.append({"role": "user", "content": initial_msg})
+
+for iteration in range(1, MAX_ITERATIONS + 1):
+    code = generate_pov(log_file, project_dir, messages, model_name)
+    # Execute and provide feedback
+    messages.append({"role": "user", "content": feedback_message})
+\`\`\`
+The strategy implements a robust fallback mechanism across multiple Claude models:
+
+\`\`\`python
+MODELS = [CLAUDE_MODEL, CLAUDE_MODEL_OPUS_4, CLAUDE_MODEL_35]
+
+for model_name in MODELS:
+    model_success_count = 0
+    for iteration in range(1, MAX_ITERATIONS + 1):
+        # Attempt POV generation with current model
+        if model_success_count >= 1:
+            break  # Move to next model after success
+\`\`\`
+
+
+Commit Analysis is the first analysis step for a single delta-scan strategy. Here is the basic prompt of this strategy, followed by language and sanitizer-specific info
+
+\`\`\`python
+base_prompt = f"""
+The provided commit introduces a vulnerability. Your job is to find the correct input to trigger the vulnerability.
+Please output a Python script that creates a x.bin file. Your blob file will be run by this fuzzer code:
+{fuzzer_code}
+
+# Commit Diff
+{commit_diff}
+"""
+\`\`\`
+
+## as0.delta.py
+This is an advanced strategy for pov generation. For this section, only different parts from the basic strategy will be introduced:
+
+**Multi-File Generation Approach**:
+In the advanced POV strategy, each LLM conversation generates a Python file that creates 5 different binary files (x1.bin to x5.bin), providing 5 attempt opportunities per iteration instead of just one.
+
+**Integrated LibFuzzer Seed Collection**:
+Additionally, every successful execution (without runtime errors) saves the current blob as a seed in the corpus for LibFuzzer execution. The strategy runs LibFuzzer for 60 seconds to collect coverage information.
+This approach uses inputs that are very close to real POVs as extensions, reducing the randomness of fuzzing. The collected coverage information is also included in subsequent feedback.
+
+\`\`\`python
+if iteration == 1:
+    user_message = f"""
+Fuzzer output: {truncate_output(fuzzer_output, 500)}
+
+Fuzzer coverage after running 60s with the blob files as seeds:
+{truncate_output(coverage_output, 2000)}
+
+The test cases did not trigger the vulnerability. Please analyze the fuzzer output and try again...
+"""
+\`\`\`
+The failure feedback includes LibFuzzer coverage output and longer fuzzer output truncation (500 vs 200 characters).
+
+
+## xs0_full
+For full-scan tasks, CRS receives only the complete source code of a project and fuzzer harnesses, without specific vulnerability indicators like commit diffs. Therefore, static analysis (call graph analysis) must be performed to filter functions from the entire codebase.
+
+Brute-force enumeration of all functions is highly inefficient. Therefore, this strategy employs **CodeQL-based call graph analysis**, starting from the fuzzer's input function to identify all reachable functions and construct a comprehensive function call graph.
+
+Since all vulnerability targets must be reachable from fuzzer entry points, any vulnerable function must exist within this call graph. This drastically reduces the search space from potentially thousands of functions to a manageable subset.
+
+After extracting reachable functions, the strategy employs LLM-based scoring to identify the most promising vulnerability candidates.
+
+This full-scan approach transforms the challenge from "finding a needle in a haystack" to "systematically analyzing the most promising needles," combining the precision of static analysis with the intelligence of LLM-based vulnerability assessment.
+`;
+
+        document.getElementById('content').innerHTML = marked.parse(markdown);
+    </script>
+</body>
+</html>
