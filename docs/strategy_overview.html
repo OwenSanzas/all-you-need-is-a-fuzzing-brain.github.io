@@ -219,6 +219,58 @@ MODELS = [
 ### 4. Phase Differentiation
 - **Basic Phase (xs*)**: Rapid initial POV generation attempts
 - **Advanced Phase (as*)**: Sophisticated multi-context analysis
+
+
+# Strategy Execution Parameters
+
+All CRS strategies accept a standardized set of command-line parameters for configuration and execution control:
+
+## Parameter Reference
+
+| Parameter | Type | Required | Description | Example Value |
+|-----------|------|----------|-------------|---------------|
+| **Basic Parameters** | | | | |
+| \`fuzzer_path\` | Positional | Yes | Path to the target fuzzer executable | \`/out/libpng_read_fuzzer\` |
+| \`project_name\` | Positional | Yes | Name of the target project | \`libpng\` |
+| \`focus\` | Positional | Yes | Focus area or component | \`example-libpng\` |
+| \`language\` | Positional | Yes | Programming language of target | \`c\`, \`java\`, \`cpp\` |
+| **POV Generation Control** | | | | |
+| \`--pov-metadata-dir\` | String | Yes | Directory for POV metadata storage | \`successful_povs_0\` |
+| \`--max-iterations\` | Integer | No | Maximum POV generation attempts | \`3\`, \`4\`, \`5\` |
+| \`--fuzzing-timeout\` | Integer | No | Timeout for individual fuzzing operations (minutes) | \`45\`, \`30\`, \`60\` |
+| \`--pov-phase\` | Integer | No | Current phase number (Advanced strategies only) | \`0\`, \`1\`, \`2\`, \`3\` |
+| **Task Configuration** | | | | |
+| \`--full-scan\` (deprecated) | Boolean | No | Enable full scan mode | \`true\`, \`false\` |
+| \`--do-patch\` (deprecated) | Boolean | No | Enable patching after POV discovery | \`true\`, \`false\` |
+| \`--check-patch-success\` | Flag | No | Verify patch effectiveness | N/A |
+| **Strategy Behavior** | | | | |
+| \`--use-coverage\` | Boolean | No | Enable coverage-guided generation | \`true\`, \`false\` |
+| \`--enable-static-analysis\` | Boolean | No | Use static analysis for context | \`true\`, \`false\` |
+| \`--multi-model\` | Boolean | No | Use multiple LLM models | \`true\`, \`false\` |
+
+## Parameter Usage by Strategy Type
+
+| Strategy Type | Core Parameters | Advanced Parameters | Specialized Parameters |
+|---------------|----------------|-------------------|----------------------|
+| **Basic POV (xs*)** | All basic parameters | \`--max-iterations\` | \`--use-coverage\` |
+| **Advanced POV (as*)** | All basic parameters | All advanced parameters | All specialized parameters |
+| **Patch Strategies** | Basic + \`--do-patch=true\` | \`--fuzzing-timeout\` | \`--check-patch-success\` |
+| **Emergency (XPatch)** | Basic parameters only | N/A | Custom XPatch flags |
+
+## Dynamic Parameter Assignment
+
+Parameters are dynamically assigned based on execution context:
+
+### Basic Phase Assignment
+\`\`\`bash
+python3 xs0_delta.py \\
+   /out/libpng_read_fuzzer \\
+   libpng \\
+   example-libpng \\
+   c \\
+   --pov-metadata-dir successful_povs_0 \\
+   --check-patch-success
+\`\`\`
 `;
 
         document.getElementById('content').innerHTML = marked.parse(markdown);
