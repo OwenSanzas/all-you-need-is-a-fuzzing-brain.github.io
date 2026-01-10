@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Strategies - All You Need Is A Fuzzing Brain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .docs-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 2rem; padding-top: 120px; gap: 2rem; }
+        .docs-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 100px; height: fit-content; }
+        .docs-sidebar h3 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-bottom: 1rem; }
+        .docs-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .docs-sidebar li { margin-bottom: 0.5rem; }
+        .docs-sidebar a { display: block; padding: 0.5rem 1rem; color: #fff; text-decoration: none; border-radius: 6px; transition: background-color 0.2s; }
+        .docs-sidebar a:hover { background-color: #1a1a2e; }
+        .docs-sidebar a.active { background-color: #6366f1; color: #fff; }
+        .docs-content { flex: 1; min-width: 0; }
+        .docs-content h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .docs-content h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #333; }
+        .docs-content h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .docs-content p { line-height: 1.7; margin-bottom: 1rem; }
+        .docs-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem 0; }
+        .docs-content pre { background-color: #1a1a2e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        .docs-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .docs-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .docs-content th, .docs-content td { padding: 0.75rem; text-align: left; border: 1px solid #333; }
+        .docs-content th { background-color: #1a1a2e; }
+        .docs-content ul, .docs-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .docs-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>All You Need Is A Fuzzing Brain</h1>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="../index.html#about">About</a>
+                    <a href="../documentation.html" class="nav-active">Documentation</a>
+                    <a href="../quickstart.html">Quickstart</a>
+                    <a href="../blog.html">Blog</a>
+                    <a href="../index.html#research">Research</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="../index.html#team">Team</a>
+                    <a href="../index.html#code">Open Source</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="docs-container">
+            <aside class="docs-sidebar">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="../documentation.html">CRS Overview</a></li>
+                    <li><a href="strategy_overview.html">Strategy Overview</a></li>
+                    <li><a href="pov_strategies.html">POV Strategies</a></li>
+                    <li><a href="patch_strategies.html">Patch Strategies</a></li>
+                    <li><a href="sarif_processing.html">SARIF Processing</a></li>
+                    <li><a href="task_processing.html">Task Processing</a></li>
+                    <li><a href="x_strategies.html" class="active">X Strategies</a></li>
+                </ul>
+            </aside>
+
+            <main class="docs-content" id="content"></main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>&copy; 2025 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>Advancing autonomous vulnerability discovery through AI</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/all-you-need-is-a-fuzzing-brain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const markdown = `# X Strategies
+
+When PoV generation fails or no vulnerability can be definitively proven, the system employs the XPatch Delta strategy as a fallback approach. This strategy represents a pragmatic compromise: rather than spending extensive resources attempting to generate PoVs for potentially non-existent vulnerabilities, it directly attempts to patch potential security issues based on commit analysis (for delta-scan tasks).
+
+
+## Basic Framework
+See **Patch Strategies** for basic understanding of a patching strategy.
+
+
+## xpatch_delta.py
+The strategy is developed based on patch_delta.py with no pov info. The strategy assumes that the vulnerability is 100% introduced by the commit. Which means all the functions in the commit are potential vulnerable functions, including callers and callees.
+
+The functions' metadata are extracted by a static analysis tool called funtarget:
+
+\`\`\`python
+def extract_diff_functions_using_funtarget(project_src_dir: str, out_dir: str) -> Union[List[Dict[str, Any]], None]:
+    # output file path
+    output_file = os.path.join(out_dir,"diff_functions.json")
+    # Read the JSON file
+    if os.path.exists(output_file):
+        with open(output_file, 'r') as f:
+            try:
+                functions = json.load(f)
+                if functions:
+                    return functions
+            except Exception as e:
+                    print(f"Unexpected error in json load output_file {output_file}: {e}")
+
+    try:
+        # Assuming it's in the same directory as the script or in PATH
+        funtarget_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "funtarget")
+        if not os.path.exists(funtarget_path):
+            # Try to find it in PATH
+            funtarget_path = "funtarget"
+
+        cmd = [funtarget_path, "-dir", project_src_dir, "-output", output_file]
+        subprocess.run(cmd, check=True)
+
+        # Read the JSON file
+        if os.path.exists(output_file):
+            with open(output_file, 'r') as f:
+                functions = json.load(f)
+
+            if not functions:
+                return None
+
+            return functions
+        else:
+            print(f"Output file {output_file} not found - likely the target function was not found")
+            return None
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error running funtarget: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON file: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error in extract_diff_functions_using_funtarget: {e}")
+        return None
+\`\`\`
+
+The function metadata includes:
+\`\`\`python
+function_metadata[func_name] = {
+    "file_path": file_path,
+    "class": class_name,
+    "content": func.get("content", ""),
+    "start_line": start_line,
+    "end_line": func.get("end_line", 0),
+}
+\`\`\`
+
+
+Then the rest is the same as patch_delta1 strategy, using LLM-driven multi-round conversations to generate patches:
+
+\`\`\`python
+INITIAL_PATCH_TEMPLATE = """# Vulnerability Patching Task
+
+## Your Role
+You are a world-leading security engineer tasked with fixing a vulnerability in code. Your goal is to generate minimal, precise patches that address only the vulnerability without changing other functionality.
+Do not aplogize when you are wrong. Just keep optimizing the result directly and proceed the progress. Do not lie or guess when you are unsure about the answer.
+
+### Context Information
+The vulnerability is introduced by the following commit:
+{commit_diff}
+
+### Relevant Functions
+{functions_metadata_str}
+
+Please return the fixed functions to patch the vulnerability.
+
+## Requirements
+1. Fix ONLY the vulnerability - do not add features or refactor code
+2. Preserve all existing functionality and logic
+3. Make minimal changes (fewest lines of code possible)
+4. Focus on security best practices
+
+## Output Format
+Return ONLY a JSON dictionary where keys are function names and values are code blocks:
+{{
+"function_name1": "function_content_with_fix",
+"function_name2": "function_content_with_fix",
+...
+}}
+
+IMPORTANT:
+- Return the fixed content for each changed function
+- Do NOT return diffs, patches, or partial code snippets
+- Do NOT include explanations or comments outside the JSON
+- Include ALL lines of the original function in your response, with your fixes applied
+
+Return ONLY the JSON dictionary described above.
+"""
+\`\`\`
+
+**Feedback if failed:**
+
+If the patch could not be applied:
+\`\`\`python
+if not success:
+    log_message(log_file, f"Failed to apply patch: {stderr}")
+    user_message = f"""
+The patch could not be applied. Here's the error:
+{truncate_output(stderr, 200)}
+
+Please generate a valid patch that can be applied to the code.
+"""
+\`\`\`
+
+Or if the patch did not fix the vulnerability:
+\`\`\`python
+user_message = f"""
+The patch did not fix the vulnerability. The fuzzer crashes:
+
+Fuzzer output:
+{truncate_output(fuzzer_output, 200)}
+"""
+user_message += """
+
+Please analyze the crash and provide a better patch.
+"""
+\`\`\`
+
+
+## xpatch_full.py
+
+This strategy is based on xs0_full strategy. Based on \`vul_funcs.json\` file generated by static analysis tool, the strategy ranks the score of each function.
+
+\`\`\`python
+existing = []
+try:
+    vul_json_path = os.path.join(base_dir, "vul_funcs.json")
+    # Load existing list (if any)
+    if os.path.exists(vul_json_path):
+        with open(vul_json_path, "r", encoding="utf-8") as fp:
+            try:
+                existing = json.load(fp)
+            except Exception:
+                existing = []
+        if not isinstance(existing, list):
+            existing = []
+except Exception as e:
+    log_message(
+        log_file,
+        f"[ERROR] Could not load vul_funcs.json: {e}"
+    )
+if not existing:
+    log_message(log_file, f"vul_json_path: {vul_json_path} does not exist!")
+    return False, patch_id
+
+high_conf = [
+    vf for vf in existing
+    if float(vf.get("score", 0)) >= 9
+]
+high_conf.sort(key=lambda x: float(x.get("score", 0)), reverse=True)
+top_candidates = high_conf[:3]
+if not top_candidates:
+    log_message(
+        log_file,
+        "[WARN] No ≥9-score vulnerable functions found – aborting patch run",
+    )
+    return False, patch_id
+\`\`\`
+
+Higher score means higher chance to introduce the vulnerability. The strategy only gets top 3 candidates as vulnerable functions.
+
+Then construct basic prompt based on the metadata:
+
+\`\`\`python
+INITIAL_PATCH_TEMPLATE = """# Vulnerability Patching Task
+
+## Your Role
+You are a world-leading security engineer tasked with fixing a vulnerability in code. Your goal is to generate minimal, precise patches that address only the vulnerability without changing other functionality.
+Do not aplogize when you are wrong. Just keep optimizing the result directly and proceed the progress. Do not lie or guess when you are unsure about the answer.
+
+### Context Information
+The vulnerability lies in one or multiple functions listed below:
+{functions_metadata_str}
+
+Please return the fixed functions to patch the vulnerability.
+
+## Requirements
+1. Fix ONLY the vulnerability - do not add features or refactor code
+2. Preserve all existing functionality and logic
+3. Make minimal changes (fewest lines of code possible)
+4. Focus on security best practices
+
+## Output Format
+Return ONLY a JSON dictionary where keys are function names and values are code blocks:
+{{
+"function_name1": "function_content_with_fix",
+"function_name2": "function_content_with_fix",
+...
+}}
+
+IMPORTANT:
+- Return the fixed content for each changed function
+- Do NOT return diffs, patches, or partial code snippets
+- Do NOT include explanations or comments outside the JSON
+- Include ALL lines of the original function in your response, with your fixes applied
+
+Return ONLY the JSON dictionary described above.
+"""
+\`\`\`
+
+The patching strategy only has 2 tries. If both failed, it will exit immediately.
+
+
+## xpatch_sarif
+
+This is for sarif task if it cannot find a valid patch in time. It is similar to xpatch_full, sarif report naturally provides vulnerable functions. All we need to do is to try to assume the vulnerability is true, and give a patch.
+
+The strategy extracts function from sarif itself:
+
+\`\`\`python
+for func in sarif_targets:
+    func_name = func.get("Name", "")
+    file_path = func.get("FilePath", "")
+    start_line = func.get("StartLine", 0)
+    end_line = func.get("EndLine", 0)
+    if int(start_line) == 0 and int(end_line) == 0:
+        start_line = start_line_x
+        end_line = end_line_x
+
+    if not func_name:
+        func_name = f"unknown_function_at_line_{start_line}"
+
+    source_code = func.get("SourceCode", "")
+    if not source_code and file_path:
+        file_path_x = file_path
+        if not os.path.exists(file_path_x):
+            file_path_x = os.path.join(project_src_dir, file_path)
+
+        if os.path.exists(file_path_x):
+            try:
+                with open(file_path_x, "r", encoding="utf-8", errors="ignore") as fh:
+                    lines = fh.readlines()
+
+                # Extract source code based on line numbers
+                if start_line > 0 and end_line >= start_line:
+                    source_code = "".join(lines[start_line - 1 : end_line])
+                else:
+                    # If no valid line numbers, take a reasonable chunk
+                    source_code = "".join(lines[:1000])  # Cap at 1000 lines for safety
+
+                # Update the function dict with the extracted source code
+                func["SourceCode"] = source_code
+
+            except Exception as e:
+                log_message(log_file, f"Failed to load source for {file_path_x}: {e}")
+                func["SourceCode"] = ""  # Mark as empty if failed
+        else:
+            log_message(log_file, f"Source file not found: {file_path_x}")
+            func["SourceCode"] = ""  # Mark as empty if file not found
+
+    # Add to function_metadata
+    function_metadata[func_name] = {
+        "file_path": file_path,
+        "content": source_code,
+        "start_line": start_line,
+        "end_line": end_line,
+    }
+\`\`\`
+
+Since sarif report has a vulnerability description, we assume it is true, and build the prompt:
+
+\`\`\`python
+INITIAL_PATCH_TEMPLATE = """# Vulnerability Patching Task
+
+## Your Role
+You are a world-leading security engineer tasked with fixing a vulnerability in code. Your goal is to generate minimal, precise patches that address only the vulnerability without changing other functionality.
+Do not aplogize when you are wrong. Just keep optimizing the result directly and proceed the progress. Do not lie or guess when you are unsure about the answer.
+
+### Context Information
+The vulnerability lies in one or multiple functions listed below:
+{functions_metadata_str}
+
+### The Vulnerability description
+{sarif_vulnerability_desc}
+
+Please return the fixed functions to patch the vulnerability.
+
+## Requirements
+1. Fix ONLY the vulnerability - do not add features or refactor code
+2. Preserve all existing functionality and logic
+3. Make minimal changes (fewest lines of code possible)
+4. Focus on security best practices
+
+## Output Format
+Return ONLY a JSON dictionary where keys are function names and values are code blocks:
+{{
+"function_name1": "function_content_with_fix",
+"function_name2": "function_content_with_fix",
+...
+}}
+
+IMPORTANT:
+- Return the fixed content for each changed function
+- Do NOT return diffs, patches, or partial code snippets
+- Do NOT include explanations or comments outside the JSON
+- Include ALL lines of the original function in your response, with your fixes applied
+
+Return ONLY the JSON dictionary described above.
+"""
+\`\`\`
+
+It also has 2 chances to generate a patch with feedback:
+
+\`\`\`python
+user_message = f"""
+The patch fails to fix the vulnerability, though the fuzzer does not crash. Can you try again to generate a patch with high confidence to fix the vulnerability comprehensively?
+"""
+# or if fuzzer still crashes:
+log_message(log_file, "Patch failed - fuzzer still crashes")
+
+user_message = f"""
+The patch did not fix the vulnerability. The fuzzer crashes:
+
+Fuzzer output:
+{truncate_output(fuzzer_output, 200)}
+"""
+user_message += """
+
+Please analyze the crash and provide a better patch.
+"""
+\`\`\`
+
+If both failed, then the strategy stops.
+`;
+
+        document.getElementById('content').innerHTML = marked.parse(markdown);
+    </script>
+</body>
+</html>
