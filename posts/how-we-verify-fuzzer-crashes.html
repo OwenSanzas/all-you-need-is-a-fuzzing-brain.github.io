@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crash 之后怎么办:四原则 × 2 步复现 × Security Proxy - FuzzingBrain</title>
+    <title>How We Verify Fuzzer Crashes: Four Principles, Two Reproductions, and a Security Proxy - FuzzingBrain</title>
     <link rel="stylesheet" href="../styles.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
@@ -39,14 +39,14 @@
         <article class="blog-post" id="main-content">
             <div class="post-header">
                 <div class="section-content">
-                    <nav class="breadcrumb"><a href="../index.html">Home</a><span class="separator">/</span><a href="../blog.html">Blog</a><span class="separator">/</span><span class="current">Crash 之后怎么办</span></nav>
+                    <nav class="breadcrumb"><a href="../index.html">Home</a><span class="separator">/</span><a href="../blog.html">Blog</a><span class="separator">/</span><span class="current">Verifying Fuzzer Crashes</span></nav>
                     <div class="post-meta">
                         <span class="post-date">April 30, 2026</span>
                         <span class="post-category">Verification</span>
                         <span class="post-readtime">12 min read</span>
                     </div>
-                    <h1 class="post-title-main">Crash 之后怎么办:四原则 × 2 步复现 × Security Proxy</h1>
-                    <p class="post-subtitle">fuzzer 一晚抛出 24,000 个 crash 里,绝大多数不值得 file。我们用三层闸门 —— 四原则再审、两次独立复现、跟维护者 threat model 对齐 —— 把 FP 率压到 <5%,同时保证每个上报都对维护者真正友好。</p>
+                    <h1 class="post-title-main">How We Verify Fuzzer Crashes: Four Principles, Two Reproductions, and a Security Proxy</h1>
+                    <p class="post-subtitle">A fuzzer can produce 24,000 crashes overnight and almost none of them deserve to be filed. We hold every candidate behind three gates. A four-principles re-audit on the crash path, two independent reproductions, and a per-library Security Proxy aligned with the maintainer's threat model. Together they keep our false-positive rate under 5% and keep every report we send genuinely useful to the maintainer.</p>
                 </div>
             </div>
 
@@ -57,27 +57,27 @@
                     <!-- Hero Stats -->
                     <section class="results-hero">
                         <div class="results-banner">
-                            <h2>Verify 的三层闸门</h2>
+                            <h2>Three Gates Before We File</h2>
                             <div class="results-stats">
                                 <div class="result-stat">
                                     <div class="stat-icon">P1–P4</div>
-                                    <div class="stat-value">四原则再审</div>
-                                    <div class="stat-label">这次只针对崩溃路径</div>
+                                    <div class="stat-value">Four-Principles Re-Audit</div>
+                                    <div class="stat-label">scoped to the crash path</div>
                                 </div>
                                 <div class="result-stat">
                                     <div class="stat-icon">2×</div>
-                                    <div class="stat-value">独立复现</div>
-                                    <div class="stat-label">harness 重放 + production 路径</div>
+                                    <div class="stat-value">Independent Reproductions</div>
+                                    <div class="stat-label">harness replay and production path</div>
                                 </div>
                                 <div class="result-stat">
                                     <div class="stat-icon">Proxies</div>
                                     <div class="stat-value">Security Proxy</div>
-                                    <div class="stat-label">每条引用必须 cite DOC</div>
+                                    <div class="stat-label">every rule cites a DOC</div>
                                 </div>
                                 <div class="result-stat">
                                     <div class="stat-icon">&lt;5%</div>
-                                    <div class="stat-value">FP 率</div>
-                                    <div class="stat-label">Across all submissions</div>
+                                    <div class="stat-value">FP Rate</div>
+                                    <div class="stat-label">across all submissions</div>
                                 </div>
                             </div>
                         </div>
@@ -85,107 +85,107 @@
 
                     <!-- Problem -->
                     <section>
-                        <h2>问题:fuzzer 抛出来的 crash 大多数不值得 file</h2>
+                        <h2>Most Fuzzer Crashes Are Not Worth Filing</h2>
                         <p>
-                            做过 fuzz 的人都遇到过这场面:一个 harness 跑了一夜,早上来看 ASan 抛出 24,000 个 crash 输入。其中绝大多数是同一个根因的 cluster siblings,真正的<em>独立 signature</em> 可能只有几十个。这几十里又只有一小部分是<strong>真的、上游会承认的</strong>漏洞。
+                            Anyone who fuzzes for a living has seen this picture. You leave a harness running overnight, and ASan greets you in the morning with 24,000 crashing inputs. The vast majority are cluster siblings of the same root cause. Maybe a few dozen represent <em>independent signatures</em>, and of those, only a small fraction are <strong>real bugs the upstream maintainer will accept</strong>.
                         </p>
                         <p>
-                            这一步如果做不好,就会变成"自动化报告噪声"的批发商。所以即便上一篇里的 LG + 反向四原则在生成阶段就过滤掉了大量错误,<strong>fuzzer 抛出 crash 之后还是要做 verify</strong>,这是上报上游之前的最后一道闸门。
+                            Get this step wrong and you become a wholesale supplier of automated report noise. So even though the LG plus reverse four-principles work from <a href="logic-groups-and-reverse-four-principles.html">Part 2</a> already filters most errors at generation time, <strong>every crash a fuzzer produces still has to be verified</strong>. Verification is the last gate before upstream.
                         </p>
                         <p>
-                            我们的 verify 流程有三层,从轻到重排好:四原则<em>再审</em>一遍具体的崩溃路径(便宜,不通过就立刻 drop)→ 两次独立复现(中等成本,排除 harness-only 的 crash)→ Security Proxy 跟维护者的威胁模型对齐(认知成本最高,但漏过会很贵)。
+                            Our verification has three layers, ordered from cheap to expensive. The first is a four-principles re-audit on the specific crash path; reading source costs almost nothing, and any P-violation drops the crash on the spot. The second is two independent reproductions, which catches crashes that only occur inside the harness. The third is a Security Proxy match against the maintainer's threat model. Cognitive cost is highest here, but missing this layer is expensive when the maintainer fires back.
                         </p>
                     </section>
 
                     <!-- Step 1 -->
                     <section>
-                        <h2>第一层:四原则,但只针对崩溃路径</h2>
+                        <h2>Gate One. Four Principles on the Crash Path</h2>
                         <p>
-                            为什么生成阶段已经过过一遍四原则,verify 阶段还要再审一遍?<strong>因为 harness 生成本身不是确定性流程</strong>。在静态分析数据齐全的 project 上,LG / 调用图 / API 协议都能被精确抽出来,生成质量很稳;但在静态分析覆盖不全的 project 上,流水线会 fallback 到由 LLM 做语义层面的推断 —— 这一步会引入随机性,不同 project 之间 harness 质量并不均一。换句话说,生成阶段的反向四原则挡掉了大多数源码层错误,但不能保证 100%。所以一旦 fuzzer 抛出 crash,我们要拿这条具体的 trace 再过一次四原则,做二次检查。
+                            If the generation pipeline already runs the four principles once, why audit them again at verify time? <strong>Because harness generation is not a deterministic process.</strong> On a project with mature static analysis, the call graph, the LGs, and the API protocol all extract precisely, and harness quality stays steady. On a project where static analysis is thin, the pipeline falls back to letting an LLM do the semantic reasoning, and that step introduces randomness. Harness quality varies project by project. The reverse four-principles work in generation catches most source-level mistakes, but it does not catch all of them. So once a fuzzer produces a crash, we run the four principles a second time over the specific trace that produced it.
                         </p>
                         <p>
-                            这一层的关键词是"<strong>具体路径</strong>"。在<a href="four-principles-harness-audit.html">第一篇</a>里,我们说四原则是 harness 整体的源码层正确性条件。在 verify 阶段,我们不再审整个 harness,只审<strong>把 crash 触发出来的那条调用路径</strong>。
+                            The key word for this gate is <strong>specific path</strong>. In <a href="four-principles-harness-audit.html">Part 1</a> we framed the four principles as a whole-harness correctness condition. At verify time we narrow the scope. We no longer audit the whole harness, only <strong>the call path that produced this crash</strong>.
                         </p>
                         <p>
-                            操作上,sanitizer trace 里的那串栈是起点。从 <code>LLVMFuzzerTestOneInput</code> 开始往下读,逐帧问:
+                            Operationally, the sanitizer trace is the starting point. We read the stack from <code>LLVMFuzzerTestOneInput</code> downward and ask, frame by frame, four questions.
                         </p>
                         <ul>
-                            <li><strong>P1(harness 自身)</strong> —— 这条路径上的 harness 代码,有没有用未初始化变量?有没有 use-after-free?有没有忘记释放?fuzz bytes 真的流到那个崩溃位置了,还是被 harness 内部覆盖了?</li>
-                            <li><strong>P2(API 协议)</strong> —— 这条路径上调用的库 API,顺序对吗?对象状态对吗?参数在合法范围吗?有没有 set_params 走在 init_ex 之前那种典型错位?</li>
-                            <li><strong>P3(安全边界)</strong> —— 这条路径有没有从 <code>extern</code> 拽出来的 static 函数?有没有跳过公开入口的输入校验?判断标准不是"是否用了内部符号"(我们鼓励但不强制走公开 API),而是<strong>同样的 crash 能不能在只调公开 API 的 harness 上复现</strong>。能 → P3 通过;不能 → P3 失败,这条 crash 在攻击者从外面够不着的代码路径上。</li>
-                            <li><strong>P4(攻击面)</strong> —— 这条路径上的 fuzz 入口,在库的<em>当前</em>公开攻击面上吗?是不是某个 deprecated demo 的入口?</li>
+                            <li><strong>P1, the harness itself.</strong> Does the harness code on this path use an uninitialized variable, hold a use-after-free pointer, or forget to free a resource? Did the fuzz bytes actually reach the crash site, or did harness-internal logic overwrite them first?</li>
+                            <li><strong>P2, the API contract.</strong> Are the library APIs on this path called in the right order, on objects in the right state, with arguments in the legal range? No <code>set_params</code> running before <code>init_ex</code>, no classic ordering inversion?</li>
+                            <li><strong>P3, the security boundary.</strong> Does this path reach a <code>static</code> function pulled out via <code>extern</code>, or skip the validation that a real entry point would have run? The test is not whether the harness uses internal symbols (we recommend public APIs but do not forbid internal ones). The test is whether the same crash can be reproduced from a harness that only calls public APIs. If yes, P3 passes. If no, the crash sits on a code path no real attacker can reach.</li>
+                            <li><strong>P4, the attack surface.</strong> Is the fuzz entry on this path part of the library's <em>current</em> public attack surface, or is it a deprecated demo entry that no longer ships?</li>
                         </ul>
                         <p>
-                            任何一条 P 不通过 —— 这个 crash 就是 harness artifact,直接 drop。我们不会让任何一个 P violation 的 crash 进到下一层 verify;这一关失败的 crash 写进 <code>dropped_crashes</code> 列表后就关掉。
+                            Fail any one of the four and the crash is a harness artifact. We drop it. No P-violation crash is allowed to reach the next gate. Crashes that fail here are recorded in <code>dropped_crashes</code> with their reason and closed out.
                         </p>
                         <p>
-                            这一步成本很低,基本是读源码。它的作用是在最早期就把"明显是 harness 自己问题"的 crash 截掉,后面两层不用浪费在显然的 noise 上。
+                            This gate is cheap; it is mostly source reading. Its job is to catch the obvious harness-bug crashes early so the next two gates do not waste effort on noise.
                         </p>
                     </section>
 
                     <!-- Step 2 -->
                     <section>
-                        <h2>第二层:两次独立复现</h2>
+                        <h2>Gate Two. Two Independent Reproductions</h2>
                         <p>
-                            P1–P4 全部通过,只说明 <em>harness 的代码看起来对</em>。它不能保证 crash 在真实世界场景里也会触发 —— 一个 crash 只能在 harness 里复现,而在真实使用模式下永远不会发生,那它顶多是个学术 curio,不是漏洞。
+                            Passing P1 through P4 only tells us the <em>harness code looks correct</em>. It does not tell us the crash would ever appear in real-world usage. A crash that reproduces only inside the harness, but never under any normal calling pattern, is at best an academic curiosity. It is not a vulnerability.
                         </p>
                         <p>
-                            所以我们要求<strong>两次独立的、互不依赖的复现</strong>。
-                        </p>
-
-                        <h3>复现 1:Harness 重放</h3>
-                        <p>
-                            把 crash 输入再喂给原 harness 跑一遍,在 ASan 下跑多次,要求每次都<strong>crash 在同一个 top stack frames 上</strong>。这一步排除两类 noise:
-                        </p>
-                        <ul>
-                            <li><strong>Flaky crash</strong> —— 由调度、随机数、未初始化内存的偶然位置触发的非确定性崩溃。这种 crash 在不同次复现时栈不一样,排除。</li>
-                            <li><strong>非确定路径</strong> —— harness 自身依赖的全局状态导致同一输入产生不同执行路径。栈不稳定就是不稳定的 fuzz signal,我们不报。</li>
-                        </ul>
-                        <p>
-                            这一步虽然简单,但它解决了一个关键的诚信问题:报上去的 crash 维护者必须能复现。如果连我们自己重放都不稳定,上游一定会复现失败。
+                            So we require <strong>two independent reproductions that do not rely on each other</strong>.
                         </p>
 
-                        <h3>复现 2:Production 路径</h3>
+                        <h3>Harness Replay</h3>
                         <p>
-                            这是关键。前面 harness 重放只是确认 fuzzer 的输出是稳定的,没排除 harness 自身把库逼到了"实际调用者永远不会触达的形状"。所以我们要求<strong>在 harness 之外、用真实使用模式</strong>把这个 crash 再触发一次。两条路径任选其一:
+                            Feed the crashing input back into the original harness and run it under ASan multiple times. Every run must crash with <strong>the same top stack frames</strong>. This rules out two kinds of noise.
                         </p>
                         <ul>
-                            <li><strong>路径 A:库自己的 CLI 工具,加 ASan 重新构建。</strong>很多库有官方 CLI(<code>dwebp</code>、<code>flatc</code>、<code>vpxdec</code>、<code>xmllint</code>、<code>upx</code>...),它们就是库的"production 模式"。如果 PoC 输入塞给 CLI 也能崩,这就是金标准 —— CLI 就是 production。</li>
-                            <li><strong>路径 B:30 行左右的最小 C/C++ 程序,只用库的公开头文件。</strong>不引 harness 私有逻辑,不调任何内部符号,完全模拟一个普通 library 用户怎么调。如果这个迷你程序也崩,就证明真实使用者也会崩。</li>
+                            <li><strong>Flaky crashes.</strong> Non-deterministic failures triggered by scheduling, randomness, or whatever happens to live in uninitialized memory at the moment. The stack varies from run to run, so we drop them.</li>
+                            <li><strong>Non-deterministic paths.</strong> Global state inside the harness sends the same input down different execution paths each run. An unstable stack is an unstable fuzz signal, and we will not file it.</li>
                         </ul>
                         <p>
-                            这一步是最重要的 FP 杀手 —— 大部分"看似真实但其实是 harness 在某种奇怪形状下逼出来"的 crash 都过不了这一关。两条路径都试过都不复现 → 这个 crash 是 harness-only,直接 drop。
+                            This step is simple but it solves a real integrity problem. A crash we file has to reproduce on the maintainer's machine. If our own replay is flaky, the maintainer's will definitely fail.
+                        </p>
+
+                        <h3>Production Path</h3>
+                        <p>
+                            This is where the real filtering happens. Replay only confirms the fuzz output is stable. It does not rule out the harness pushing the library into a shape no real caller would ever produce. So we require the crash to fire <strong>once more, outside the harness, using a real calling pattern</strong>. Either of two routes works.
+                        </p>
+                        <ul>
+                            <li><strong>Route A. The library's own CLI, rebuilt with ASan.</strong> Many libraries ship official CLIs (<code>dwebp</code>, <code>flatc</code>, <code>vpxdec</code>, <code>xmllint</code>, <code>upx</code>, and so on), and those CLIs are the library's production mode. If the PoC crashes the CLI too, that is the gold standard. The CLI <em>is</em> production.</li>
+                            <li><strong>Route B. A minimal C or C++ program, around 30 lines, using only the library's public headers.</strong> No harness-private logic, no internal symbols, just an honest imitation of how a normal library user would call the API. If the minimal program also crashes, real consumers would crash too.</li>
+                        </ul>
+                        <p>
+                            This is the most important FP killer. Most of the crashes that <em>look</em> real but were really the harness pushing the library into a strange shape do not survive this step. If neither route reproduces the crash, it is harness-only and we drop it.
                         </p>
                         <p>
-                            我们 file 的每个 issue 都附带一个<strong>自洽的 <code>repro/</code> 包</strong>(<code>build.sh</code>、<code>run.sh</code>、<code>generate_poc.py</code>、那个 30 行 reproducer 的源码、ASan log)。维护者从这个包就能 rebuild,不需要任何指向我们 repo 的链接。这件事看起来不起眼,但它把"维护者复现成本"降到了几乎为零,这是上游友好的核心。
+                            Every issue we file ships with a <strong>self-contained <code>repro/</code> package</strong> containing <code>build.sh</code>, <code>run.sh</code>, <code>generate_poc.py</code>, the source of the 30-line reproducer, and the ASan log. The maintainer can rebuild from that package alone, with no pointers back into our repository. It looks like a small thing, but it reduces the maintainer's reproduction cost to nearly zero, and that is the heart of being friendly to upstream.
                         </p>
                     </section>
 
                     <!-- Step 3 - Security Proxy -->
                     <section>
-                        <h2>第三层:Security Proxy —— 跟维护者的威胁模型对齐</h2>
+                        <h2>Gate Three. The Security Proxy</h2>
                         <p>
-                            过了前两层的 crash,技术上看是真的 —— harness 干净、复现稳定、production 路径也能崩。<strong>但这不代表它一定是漏洞。</strong>每个库都有它自己的安全契约,有些"看起来很可怕的 crash"在这个契约下属于"caller 应该自己防的事",上报上去会被关。
+                            A crash that survives the first two gates is technically real. The harness is clean, replay is stable, the production path also crashes. <strong>That still does not make it a vulnerability.</strong> Every library has its own security contract. Under that contract, some scary-looking crashes are simply "things the caller is supposed to defend against," and filing them gets the issue closed.
                         </p>
                         <p>
-                            这一层处理的就是<strong>跨产品的安全合约层面</strong>的判断 —— 四原则覆盖不到、复现也覆盖不到的那种 FP。
+                            This third gate handles the <strong>security-contract</strong> judgement that the previous two gates cannot. The four principles cover source-level correctness; reproduction covers fuzzer-only artifacts. Neither catches the FP that happens because the maintainer simply does not consider this class of bug a vulnerability.
                         </p>
 
-                        <h3>每个库一份 security_proxy.yaml</h3>
+                        <h3>One Security Proxy per Library</h3>
                         <p>
-                            我们对每个 fuzz 的库都维护一份 <code>security_proxy.yaml</code>,明确写下:
+                            For every library we fuzz, we maintain a <code>security_proxy.yaml</code> that records, in one place,
                         </p>
                         <ul>
-                            <li>哪些输入路径维护者认为是 "trusted",哪些是 "attacker-controlled"</li>
-                            <li>哪些 API 是公开攻击面(in-scope),哪些只是 caller 内部使用(out-of-scope)</li>
-                            <li>哪些 crash class 维护者明确<strong>不会</strong>当作漏洞处理</li>
-                            <li>已知的、维护者已经在 <code>SECURITY.md</code> 里声明过的 caller-contract</li>
+                            <li>which input paths the maintainer treats as <em>trusted</em> and which are <em>attacker-controlled</em>,</li>
+                            <li>which APIs are part of the public attack surface (in-scope) and which are caller-internal only (out-of-scope),</li>
+                            <li>which crash classes the maintainer has historically <strong>refused</strong> to treat as vulnerabilities,</li>
+                            <li>and the caller-contract assumptions the maintainer has already published in <code>SECURITY.md</code>.</li>
                         </ul>
                         <p>
-                            最关键的硬性要求:<strong>每条都必须 cite 上游文档</strong>,格式是 <code>source: DOC:&lt;path&gt;</code>,引用必须落到上游仓库里的具体文件 —— <code>SECURITY.md</code>、公开头文件注释、官方 README、维护者在 issue tracker 里的明确表态。
+                            The hard rule. <strong>Every entry must cite an upstream document.</strong> The form is <code>source: DOC:&lt;path&gt;</code>, and the path has to point at a specific file in the upstream repository. That means <code>SECURITY.md</code>, comments in a public header, the official README, or an explicit statement from the maintainer in the issue tracker.
                         </p>
                         <p>
-                            <strong>不允许我们自己的解读</strong>。如果某条规则我们想加但找不到上游 DOC 来源,这条规则不进 proxy。这种"严格保守 + 必须有引文"的原则是反对错填 proxy 把真 bug 错误地排除掉的护栏。
+                            <strong>No interpretations of our own.</strong> If we want to add a rule but cannot find an upstream DOC for it, the rule does not go in. This conservative posture, requiring a citation for every claim, is what keeps us from quietly defining real bugs out of scope.
                         </p>
                         <div class="proxy-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin: var(--spacing-md) 0 var(--spacing-lg); box-shadow: var(--shadow-md);">
 
@@ -196,7 +196,7 @@
                                     <div style="font-size: var(--font-size-xl); font-weight: 700; color: var(--text-primary); margin-top: 2px;">flatbuffers</div>
                                 </div>
                                 <div style="text-align: right; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-muted); line-height: 1.55;">
-                                    <div>v2 · last_reviewed: 2026-04-26</div>
+                                    <div>v2 · last_reviewed 2026-04-26</div>
                                     <div style="color: var(--text-faint);">github.com/google/flatbuffers</div>
                                 </div>
                             </div>
@@ -204,19 +204,19 @@
                             <!-- Legend -->
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 14px; padding: 12px 14px; background: rgba(0,0,0,0.22); border-radius: var(--radius-sm); margin-bottom: var(--spacing-md); font-size: var(--font-size-xs); color: var(--text-secondary); line-height: 1.5;">
                                 <div style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint); letter-spacing: 0.08em; grid-column: 1 / -1;">HOW TO READ THIS CARD</div>
-                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--emerald-500); color: white; border-radius: 3px; font-weight: 700; vertical-align: 1px;">IN-SCOPE</span> &nbsp;maintainer treats this as a real vuln &mdash; <strong>file the crash</strong></div>
-                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--red-500); color: white; border-radius: 3px; font-weight: 700; vertical-align: 1px;">OUT-OF-SCOPE</span> &nbsp;caller-contract or unsupported &mdash; <strong>drop the crash</strong></div>
-                                <div><code>↳ DOC:&lt;path&gt;</code> &nbsp;mandatory upstream citation; no DOC, no rule</div>
+                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--emerald-500); color: white; border-radius: 3px; font-weight: 700; vertical-align: 1px;">IN-SCOPE</span> &nbsp;maintainer treats this as a real vuln, so <strong>file the crash</strong></div>
+                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--red-500); color: white; border-radius: 3px; font-weight: 700; vertical-align: 1px;">OUT-OF-SCOPE</span> &nbsp;caller-contract or unsupported, so <strong>drop the crash</strong></div>
+                                <div><code>↳ DOC:&lt;path&gt;</code> &nbsp;mandatory upstream citation. No DOC, no rule.</div>
                                 <div><code>feeds_into TB-N</code> &nbsp;maintainer's reply hardened rule TB-N</div>
-                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--slate-700); color: var(--red-400); border-radius: 3px; font-weight: 700; vertical-align: 1px;">WONTFIX</span> &nbsp;maintainer has historically rejected this crash class</div>
-                                <div style="grid-column: 1 / -1; color: var(--text-muted); font-style: italic;">When a candidate crash matches an OUT-OF-SCOPE rule the gate at the bottom drops it before filing.</div>
+                                <div><span style="display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; background: var(--slate-700); color: var(--red-400); border-radius: 3px; font-weight: 700; vertical-align: 1px;">WONTFIX</span> &nbsp;crash class the maintainer has historically rejected</div>
+                                <div style="grid-column: 1 / -1; color: var(--text-muted); font-style: italic;">When a candidate crash matches an OUT-OF-SCOPE rule, the gate at the bottom drops it before filing.</div>
                             </div>
 
                             <!-- Threat Model -->
                             <div style="margin-bottom: var(--spacing-md);">
                                 <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                                     <span style="display: inline-block; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(99, 102, 241, 0.18); color: var(--primary-light); letter-spacing: 0.05em;">THREAT MODEL</span>
-                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">one-paragraph summary of how the maintainer treats untrusted input</span>
+                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">how the maintainer treats untrusted input, in one paragraph</span>
                                 </div>
                                 <p style="color: var(--text-secondary); margin: 0; line-height: 1.55;">Accessors do not bounds-check. Callers MUST run the Verifier on untrusted bytes before any <code>GetRoot&lt;T&gt;</code> / <code>Get*</code> / <code>operator[]</code> access. Reflection paths assume schemas come from the project itself.</p>
                                 <div style="margin-top: 8px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint);">↳ DOC:docs/source/CppUsage.md#L120</div>
@@ -226,7 +226,7 @@
                             <div style="margin-bottom: var(--spacing-md);">
                                 <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                                     <span style="display: inline-block; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(99, 102, 241, 0.18); color: var(--primary-light); letter-spacing: 0.05em;">TRUST BOUNDARIES</span>
-                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">case-by-case rules: each says "crash on this path → file" or "→ drop"</span>
+                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">case-by-case rules that decide whether a crash on a given path is filed or dropped</span>
                                 </div>
 
                                 <div style="display: grid; gap: 8px;">
@@ -256,7 +256,7 @@
                                             <span style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--emerald-400); font-weight: 700;">TB-3</span>
                                             <span style="font-family: var(--font-mono); font-size: 0.7rem; padding: 2px 8px; background: var(--emerald-500); color: white; border-radius: 4px; font-weight: 700; letter-spacing: 0.08em;">IN-SCOPE</span>
                                         </div>
-                                        <div style="color: var(--text-primary); line-height: 1.5;">Crash on a buffer that <em>passed</em> Verify is a real bug — Verifier is incomplete.</div>
+                                        <div style="color: var(--text-primary); line-height: 1.5;">Crash on a buffer that <em>passed</em> Verify is a real bug. The Verifier is incomplete.</div>
                                         <div style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint); margin-top: 4px;">↳ DOC:docs/source/Tutorial.md#L312</div>
                                     </div>
                                 </div>
@@ -311,7 +311,7 @@
                             <div style="margin-bottom: var(--spacing-md);">
                                 <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                                     <span style="display: inline-block; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(99, 102, 241, 0.18); color: var(--primary-light); letter-spacing: 0.05em;">OBSERVED REPLIES</span>
-                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">real maintainer verdicts; each one feeds back to harden a rule above</span>
+                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">real maintainer verdicts. Each one feeds back to harden a rule above.</span>
                                 </div>
                                 <div style="display: grid; gap: 8px;">
                                     <!-- Real case 1: #9008 — Verifier-passed crash, accepted (validates TB-3) -->
@@ -323,7 +323,7 @@
                                             <span style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint);">→ feeds_into TB-3</span>
                                         </div>
                                         <div style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.5;">PoC called <code>VerifyBuffer</code> first; <code>ToString</code> still read past a 4-byte heap allocation. Maintainer <code>steadytao</code> confirmed in 3 days and opened <a href="https://github.com/google/flatbuffers/pull/9011" style="color: var(--primary-light); text-decoration: none;">PR #9011</a> "Reject unterminated FlexBuffers keys during verification".</div>
-                                        <div style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint); margin-top: 4px;">filed 2026-03-30 · confirmed 2026-04-03 · pov_called_verifier: true</div>
+                                        <div style="font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-faint); margin-top: 4px;">filed 2026-03-30 · confirmed 2026-04-03 · pov_called_verifier true</div>
                                     </div>
                                     <!-- Real case 2: #9040 — reflection path, NO_VULNERABILITY (validates TB-2 even though fixed) -->
                                     <div style="padding: 10px 14px; background: rgba(0,0,0,0.18); border-left: 3px solid var(--red-500); border-radius: var(--radius-sm);">
@@ -343,116 +343,116 @@
                             <div>
                                 <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                                     <span style="display: inline-block; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(245, 158, 11, 0.18); color: var(--amber-500); letter-spacing: 0.05em;">GATE</span>
-                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">hard rule, not advisory: an OUT-OF-SCOPE match must be dropped, not filed</span>
+                                    <span style="color: var(--text-muted); font-size: var(--font-size-xs); font-style: italic;">hard rule rather than advisory. An OUT-OF-SCOPE match must be dropped, not filed.</span>
                                 </div>
                                 <div style="padding: 12px 14px; background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--text-secondary); line-height: 1.7;">
-                                    <div><span style="color: var(--amber-500);">on_match_out_of_scope:</span> <strong style="color: var(--text-primary);">drop</strong> &nbsp;→&nbsp; <span style="color: var(--text-faint);">log to dropped_crashes/&lt;batch_id&gt;.yaml</span></div>
-                                    <div style="margin-top: 4px;"><span style="color: var(--amber-500);">must_record:</span> trust_boundary_id · source_doc_line · sanitizer_top_frames</div>
+                                    <div><span style="color: var(--amber-500);">on_match_out_of_scope</span> <strong style="color: var(--text-primary);">drop</strong> &nbsp;→&nbsp; <span style="color: var(--text-faint);">log to dropped_crashes/&lt;batch_id&gt;.yaml</span></div>
+                                    <div style="margin-top: 4px;"><span style="color: var(--amber-500);">must_record</span> trust_boundary_id · source_doc_line · sanitizer_top_frames</div>
                                 </div>
                             </div>
 
                         </div>
 
-                        <h3>三个真实例子,看 proxy 怎么救你</h3>
+                        <h3>Three Real Cases Where the Proxy Saves You</h3>
 
-                        <h4>例子 1:flatbuffers —— 不跑 Verifier 的 crash 都不算</h4>
+                        <h4>Case 1. flatbuffers, where any crash without Verifier does not count</h4>
                         <p>
-                            flatbuffers 维护者在文档和 <code>CppUsage</code> 指南里反复强调:你的代码必须先调 <code>VerifyBuffer</code>,再访问数据。如果你跳过 Verifier 直接 <code>GetRoot&lt;T&gt;</code> 然后去读 fields,这是 caller-contract 违规,任何 crash 都不是库 bug。
+                            The flatbuffers maintainers repeat the same instruction across their documentation and the <code>CppUsage</code> guide. Your code must call <code>VerifyBuffer</code> before it touches the data. If you skip Verifier and go straight to <code>GetRoot&lt;T&gt;</code> and read fields, that is a caller-contract violation, and any crash that follows is not a library bug.
                         </p>
                         <p>
-                            这就是为什么我们对 flatbuffers fuzz 的每个 LG 都会先在 proxy 里看一遍:这个 LG 走 Verifier 吗?如果不走,fuzzer 跑出再像 OOB 的 crash 也不能 file。从这一波 fuzz 的 8 个 flatbuffers findings 里,有不少候选 crash 在 proxy 这一层就被识别成 "需要先 verify"——补上 VerifyBuffer 之后还能 crash 才报。
-                        </p>
-
-                        <h4>例子 2:libxml2 —— 库根本不打算信任输入</h4>
-                        <p>
-                            libxml2 的姿态在 <code>SECURITY.md</code> 里说得相当直接:它<strong>无条件信任</strong>它解析的 XML。"Don't feed it untrusted input" 是这个库的官方建议。所以 parser 路径上很多 OOM、unbounded recursion 之类的 crash 在维护者眼里都属于 "you fed it garbage",不属于 vulnerability。
-                        </p>
-                        <p>
-                            没有 proxy 就会犯一个非常容易的错误:看到 sanitizer 抛 OOM 立刻 file,然后被维护者一句 "WONTFIX, see SECURITY.md" 关掉。账号信誉就慢慢被这种正确但无效的报告蚕食。proxy 让我们在 file 之前看一眼那条引用,如果根因落在这个 trust boundary 上,直接归到 dropped 里,理由记得清清楚楚。
+                            That is why every LG we fuzz on flatbuffers gets a proxy lookup first. Does this LG run the Verifier? If not, an OOB-looking crash from the fuzzer is not fileable. Among the 8 flatbuffers findings from this campaign, several candidate crashes were identified at the proxy layer as "needs Verify first." We only filed the ones that still crashed after we added <code>VerifyBuffer</code> in front.
                         </p>
 
-                        <h4>例子 3:Dawn (WebGPU) —— BlobCache 不是 trust boundary</h4>
+                        <h4>Case 2. libxml2 does not pretend to trust its input</h4>
                         <p>
-                            Dawn 的运行时 API 是强 trust boundary —— 浏览器层会校验、parser 内部也会再校。但磁盘上的 BlobCache 不是。Dawn 的设计文档<strong>明确说</strong> BlobCache 是 integrity check(防止意外损坏),<em>不是</em> authenticity check(防止恶意篡改)。
+                            libxml2's stance in <code>SECURITY.md</code> is unusually direct. The library <strong>unconditionally trusts</strong> the XML it parses. "Don't feed it untrusted input" is the official guidance. Many parser-path crashes, including OOM and unbounded recursion, are simply "you fed it garbage" in the maintainer's eyes. They are not vulnerabilities.
                         </p>
                         <p>
-                            意思是:如果你的 fuzz 路径只能通过修改 BlobCache 文件触发 crash —— 那 Dawn 维护者会把它判 WontFix。攻击者可以写到那个文件,就早就有更直接的方法搞这台机器了。proxy 把这件事编码下来,你就不会拿这种类型的 crash 去打扰他们。
+                            Without a proxy, the easy mistake is to see ASan throw an OOM and file it on the spot, only to be closed with a single "WONTFIX, see SECURITY.md." That kind of technically-correct-but-useless report slowly erodes your account's reputation. The proxy lets us check the citation first. If the root cause sits on this trust boundary, the crash goes to <code>dropped</code> with the reason recorded cleanly.
                         </p>
 
-                        <h3>没 proxy 的实际代价</h3>
+                        <h4>Case 3. Dawn (WebGPU), where the BlobCache is not a trust boundary</h4>
                         <p>
-                            这一波 fuzz 里我们撞过一次 proxy 没覆盖到的边界 —— V8 的 <code>uaf-v8-deserializer-unresolved-external-reference</code>。技术上是真的 UAF,P1–P4 干净、harness 重放和 production 复现都通过。但 V8 团队在<a href="https://chromium.googlesource.com/v8/v8/+/HEAD/docs/security/triaging.md#relying-on-broken-snapshots-to-craft-vulnerabilities">他们的安全 triaging policy</a> 里明确把"依赖攻击者控制的 snapshot blob"列为 out-of-scope。所以 file 之后被标 Won't Fix,变成我们这一轮 3 个 FP 之一。
+                            Dawn's runtime API is a strong trust boundary. The browser layer validates inputs, and the parser revalidates internally. The on-disk BlobCache, however, is not. Dawn's design document <strong>explicitly states</strong> that BlobCache is an integrity check, meant to catch accidental corruption, and not an authenticity check that would catch malicious tampering.
                         </p>
                         <p>
-                            要是 proxy 在 file 之前就编码了 V8 的这条 policy(我们那时候还没维护 V8 的 proxy),这一报本来可以直接归进 dropped。这种丢分让我们更确信 proxy 的工程价值 —— <strong>它的目的不是少找 bug,而是不浪费维护者的时间</strong>。
+                            Which means, if your fuzz path can only trigger a crash by modifying the BlobCache file on disk, the Dawn maintainers will mark it WontFix. An attacker who can write to that file already has more direct ways to compromise the machine. We encode this in the proxy so we never bring that kind of crash to their inbox.
+                        </p>
+
+                        <h3>What It Costs to Skip the Proxy</h3>
+                        <p>
+                            In this campaign we hit one boundary the proxy did not yet cover. V8's <code>uaf-v8-deserializer-unresolved-external-reference</code> was a real UAF technically, P1 through P4 were clean, and both replay and production reproduction passed. But the V8 team's <a href="https://chromium.googlesource.com/v8/v8/+/HEAD/docs/security/triaging.md#relying-on-broken-snapshots-to-craft-vulnerabilities">security triaging policy</a> explicitly lists "vulnerabilities that rely on an attacker-controlled snapshot blob" as out of scope. We filed it, the issue came back Won't Fix, and it became one of three FPs in this round.
+                        </p>
+                        <p>
+                            If the proxy had encoded V8's policy before we filed (we did not have a V8 proxy at the time), that report would have been dropped before submission. Losing a round on something like that made us more confident in the proxy's engineering value. <strong>Its purpose is not to find fewer bugs. Its purpose is to not waste the maintainer's time.</strong>
                         </p>
                     </section>
 
                     <!-- The cost of FPs -->
                     <section>
-                        <h2>为什么这套流程值得做</h2>
+                        <h2>Why This Is Worth Doing</h2>
                         <p>
-                            从纯效率看,verify 流程对每个 crash 加了 5–60 分钟的成本;对一晚出来几万 crash 的 fuzz 而言,这是巨大的吞吐量损失。但<strong>损失的不是真 bug,损失的是 noise</strong> —— 三层闸门各自的目的就是更早把 noise 砍掉。
+                            On pure throughput, the verify flow adds 5 to 60 minutes per crash. Across an overnight fuzz that produces tens of thousands of crashes, that is a massive efficiency hit. But <strong>what we lose is not real bugs, only noise.</strong> Each of the three gates exists to cut that noise earlier and earlier.
                         </p>
                         <p>
-                            做对了的好处会延迟显现:维护者第一次见你时,看到的是一份带 root cause、带公开 API repro、带 fix patch 的报告。第二次再见,就会主动 ack。三五次之后,他们会愿意把你写的 harness 直接接进自己的 OSS-Fuzz 任务 —— 这是<a href="four-principles-harness-audit.html">第一篇</a>里 OpenSSL <code>quic_server</code>、fwupd 那 4 个团队的故事。
+                            The payoff is slow but real. The first time a maintainer encounters you, they see a report with a root cause, a public-API reproducer, and a fix patch. The second time, they ack on their own. After three or five rounds, they start adopting your harnesses directly into their OSS-Fuzz integration. That is the OpenSSL <code>quic_server</code> and fwupd story from <a href="four-principles-harness-audit.html">Part 1</a>, where four maintainer teams picked up our work.
                         </p>
                         <p>
-                            没做的代价同样会延迟显现 —— 你不会立刻看到"信誉损失",但慢慢地你的 GitHub handle 会被某些维护者 mute,你的 issue 默认低优,你的 PR 不被 review。这就是 LLM-driven fuzz 工作给整个 ecosystem 留下的心理债务。
+                            The cost of skipping is also delayed. You will not immediately see "reputation loss," but slowly your GitHub handle gets muted by certain maintainers, your issues default to low priority, your PRs sit unreviewed. That is the psychological debt LLM-driven fuzz work leaves behind for the whole ecosystem.
                         </p>
                         <p>
-                            把 verify 三层闸门都跑过的另一个隐性收益:你<strong>知道哪些 crash 你没有 file 以及为什么</strong>。这件事在被 maintainer 反问 "为什么你们没报 X?" 的时候非常有用 —— 我们能立刻拿出 dropped_crashes 的记录给到原因。这种透明度也是 ecosystem trust 的一部分。
+                            There is another subtle payoff to running all three gates. You <strong>know which crashes you did not file and why.</strong> When a maintainer asks "Why didn't you report X?", we can pull up the <code>dropped_crashes</code> log and show the reason on the spot. That kind of transparency is also part of ecosystem trust.
                         </p>
                     </section>
 
                     <!-- Open questions -->
                     <section>
-                        <h2>还在思考的问题</h2>
+                        <h2>Open Questions We're Still Working On</h2>
                         <p>
-                            这套流程不是终点。我们目前最关心的几件事:
+                            This flow is not the end of the story. These are the questions we care most about right now.
                         </p>
                         <ul>
-                            <li><strong>自动生成 proxy</strong>。每个新库手工写一份 <code>security_proxy.yaml</code> 是有成本的。我们正在尝试从 <code>SECURITY.md</code> / 公开头文件 / README 自动抽出条款,但抽得对不对、引文落得准不准还需要人审一遍。</li>
-                            <li><strong>Proxy 衰减</strong>。上游的 threat model 会随时间变化(新的 sandbox、新的 trusted boundary),proxy 没有 staleness 信号。我们得想出怎么在维护者更新 docs 时主动 invalidate proxy。</li>
-                            <li><strong>"无 proxy"的库</strong>。很多项目根本没发布 threat model。我们目前默认走最严格的策略(只报无可争议的内存安全 bug),但这是个 bet —— 我们可能错过了一些项目维护者愿意修的边界 case。</li>
-                            <li><strong>二阶效应</strong>。我们最担心的不是 FP 灌水,而是<strong>真 bug 被维护者一并 auto-close</strong> —— 维护者看多了低质量 LLM 报告,看到自动化提交就先打 low-quality 标签。这是整个 ecosystem 层面的信任滑坡,单靠一个团队的 verify 流程拦不住。这件事我们最希望和 OpenSSF working group 一起讨论。</li>
+                            <li><strong>Automatically generating the proxy.</strong> Hand-writing a <code>security_proxy.yaml</code> for every new library is real work. We are extracting rules automatically from <code>SECURITY.md</code>, public headers, and README files, but a human still has to review whether each extraction is correct and whether the citation lands on the right line.</li>
+                            <li><strong>Proxy decay.</strong> The upstream threat model shifts over time as new sandboxes and new trusted boundaries get added, and the proxy has no staleness signal. We need a way to actively invalidate proxy entries when maintainers update their docs.</li>
+                            <li><strong>Libraries with no proxy.</strong> Many projects publish no threat model at all. Our default for those is the strictest possible posture, where we only file unambiguous memory-safety bugs. That is a bet, and we are probably missing edge cases the maintainer would have been happy to fix.</li>
+                            <li><strong>Second-order effects.</strong> The failure mode that worries us most is not FP spam. It is <strong>real bugs getting auto-closed by maintainers</strong> who have seen too many low-quality LLM reports and now treat anything automated as low-quality by default. That is an ecosystem-wide trust slide, and no single team's verify flow can catch it. This is the topic we most want to discuss with the OpenSSF working group.</li>
                         </ul>
                     </section>
 
                     <!-- Recap -->
                     <section>
-                        <h2>三篇串联起来:从 harness 审计到 vulnerability 上报</h2>
+                        <h2>Three Posts End to End, From Harness Audit to Bug Report</h2>
                         <p>
-                            到这里,三篇 blog 完整地把<strong>四原则</strong>用了三次:
+                            Across these three posts, we have applied the <strong>four principles</strong> three different ways.
                         </p>
                         <ul>
-                            <li><a href="four-principles-harness-audit.html"><strong>第一篇</strong></a> —— 用四原则<em>审</em>已有 harness,在 OSS-Fuzz 上拦下 14 个 FP、提了 53 个修复 PR、顺便挖出 25 年的 OpenSSL 老 bug。</li>
-                            <li><a href="logic-groups-and-reverse-four-principles.html"><strong>第二篇</strong></a> —— Adversarial harness generation on the four principles:用四原则<em>反向</em>(P4 → P1)配合 Logic Group 切分,两周为 Chromium 及其依赖部署 472 个 harness,30 个 file 给上游(16 acked so far — 9 confirmed + 7 fixed),52 个在我们 audit 阶段就 drop 掉了。</li>
-                            <li><strong>本篇</strong> —— 用四原则<em>第三次</em>审具体崩溃路径,加上两次独立复现和 Security Proxy,把 file 上去的每个 issue 都做到对维护者真正友好。</li>
+                            <li><a href="four-principles-harness-audit.html"><strong>Part 1</strong></a>. The four principles as an <em>audit</em> tool. Applied to existing OSS-Fuzz harnesses, the audit prevented 14 FPs from ever reaching upstream, produced 53 fix PRs, and surfaced an OpenSSL bug that had been latent for 25 years.</li>
+                            <li><a href="logic-groups-and-reverse-four-principles.html"><strong>Part 2</strong></a>. The four principles as a <em>generation</em> tool, applied in reverse (P4 first, P1 last) with Logic Group decomposition. In two weeks we deployed 472 harnesses across Chromium and its dependencies, filed 30 reports upstream (16 acked so far, 9 confirmed plus 7 fixed), and dropped 52 candidates at our own audit stage.</li>
+                            <li><strong>This post</strong>. The four principles as a <em>verification</em> tool, on the specific crash path, combined with two independent reproductions and a per-library Security Proxy. The result is that every issue we file is genuinely useful to the maintainer.</li>
                         </ul>
                         <p>
-                            一条规则能在审计、生成、verify 三个阶段都好用,说明它选的位置是对的 —— 在源码层做正确性的定义,而不是在 fuzz 输出后做事后挑选。这是这一系列工作的核心结论:<strong>harness 质量是 fuzzing 有效性的瓶颈;靠在生成器里把源码层检查内化进去解决,而不是靠 verify 阶段救场</strong>。
+                            That a single rule set works in audit, generation, and verification suggests we picked the right level of abstraction. Source-level correctness definitions hold up, while post-hoc filtering on fuzz output does not. That is the headline of this series. <strong>Harness quality is the bottleneck for fuzz effectiveness, and the way to fix it is to internalize source-level checks at generation time rather than rely on verify-time triage to save the day.</strong>
                         </p>
                     </section>
 
                     <!-- What's next -->
                     <section class="future-section">
-                        <h2>对话欢迎</h2>
+                        <h2>Open to a Conversation</h2>
                         <p>
-                            如果你也在做 LLM-driven fuzz harness 生成、或者在 OSS-Fuzz 上接收过低质量自动化报告、或者就是对四原则 / LG / Security Proxy 任何一块感兴趣,我们都很乐意聊聊。
+                            If you build LLM-driven fuzz harness generators, if you've been on the receiving end of low-quality automated reports on OSS-Fuzz, or if any of the four principles, Logic Groups, or Security Proxy work interests you, we'd be glad to talk.
                         </p>
                         <div class="next-steps">
                             <div class="next-step">
                                 <h4>OpenSSF working group</h4>
-                                <p>我们最在意的不是 FP spam,而是真 bug 被自动归到低优的二阶效应。希望和 LLM-generated bug-report triage 的 working group 一起谈。</p>
+                                <p>What worries us most is not FP spam. It is real bugs getting auto-routed to low priority. We would like to discuss this with the LLM-generated bug-report triage working group.</p>
                             </div>
                             <div class="next-step">
-                                <h4>开源</h4>
-                                <p>四原则的子检查清单、LG 的 schema、verify 流程的 SKILL 都已经在 <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain">o2lab GitHub</a> 上,可以直接复用。</p>
+                                <h4>Open source</h4>
+                                <p>The four-principles sub-check list, the LG schema, and the verify-flow SKILL are all available on <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain">o2lab GitHub</a>. Reuse them freely.</p>
                             </div>
                             <div class="next-step">
-                                <h4>Chrome 实测数据</h4>
-                                <p>第二篇里 472 个 harness / 30 filed / 52 audit-dropped 的元数据全部在 chrome-maint dashboard 上公开。</p>
+                                <h4>Chrome production data</h4>
+                                <p>All 472 harnesses, 30 filed reports, and 52 audit-dropped candidates from Part 2 are public on the chrome-maint dashboard.</p>
                             </div>
                         </div>
                     </section>
@@ -460,8 +460,8 @@
                     <!-- CTA -->
                     <section class="cta-section">
                         <div class="cta-content">
-                            <h2>读我们写给 OpenSSF 的 short note</h2>
-                            <p>这篇 blog 的 source-level 版本是给 OpenSSF working group 写的一份 119 行的短文,在 <code>docs/share/how-we-verify-bugs.md</code>。</p>
+                            <h2>Read the short note we wrote for OpenSSF</h2>
+                            <p>The source-level version of this post is a 119-line note we wrote for the OpenSSF working group. It lives at <code>docs/share/how-we-verify-bugs.md</code>.</p>
                             <div class="cta-buttons">
                                 <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-primary">
                                     <span>View on GitHub</span>
@@ -483,7 +483,7 @@
 
         <!-- Footer -->
         <nav class="post-navigation">
-            <a href="logic-groups-and-reverse-four-principles.html" class="post-nav-link prev"><span class="nav-label">Previous</span><span class="nav-title">← 对抗性生成 Harness</span></a>
+            <a href="logic-groups-and-reverse-four-principles.html" class="post-nav-link prev"><span class="nav-label">Previous</span><span class="nav-title">← Adversarial Harness Generation</span></a>
         </nav>
 
         <footer class="footer">
