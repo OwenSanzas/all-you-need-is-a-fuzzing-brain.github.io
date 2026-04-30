@@ -94,31 +94,6 @@
                         </p>
                     </section>
 
-                    <!-- Why reverse -->
-                    <section>
-                        <h2>Why Reverse the Order at Generation Time</h2>
-                        <p>
-                            Part 1's audit only ran the mechanical part: <strong>P1.1–P1.8 + P2.1–P2.8, 16 sub-checks total</strong>. P3 and P4 were not part of the static pass. The harnesses had been on production OSS-Fuzz for years and the entry points had been picked by upstream reviewers; we only sanity-checked P3 / P4 manually on borderline cases. P3 and P4 are judgement calls, not mechanical checks. That is a luxury you only get when you are <em>catching</em> an existing harness.
-                        </p>
-                        <p>
-                            Generation does not get that luxury. The entry point is something <strong>we are choosing on the spot</strong> — there is no upstream reviewer to pre-vet P4 (does the target sit on a real attack surface) or P3 (is the crash reachable from the public side). Skip those two and let an LLM write the code first, and after a 60-second fuzz run reveals the entry was wrong, the rest of the work is wasted. So reversing is not a cosmetic reorder. It is <strong>adding the two checks audit could skip but generation cannot, and putting them ahead of everything else</strong>:
-                        </p>
-
-                        <ul>
-                            <li><strong>P4 — Pick the attack surface.</strong> The closure of public APIs must contain memory-safety-relevant operations. If not, change the target.</li>
-                            <li><strong>P3 — Validate the boundary.</strong> Prefer a public entry. If an internal symbol is unavoidable, the same crash must be reproducible from public-side input.</li>
-                            <li><strong>P2 — Research the protocol.</strong> Call order, object lifetimes, parameter ranges, paired cleanup — done <em>before</em> any harness code is written.</li>
-                            <li><strong>P1 — Write the code.</strong> If the previous three pass, P1 is an isolated engineering task; the 16 sub-checks apply directly.</li>
-                        </ul>
-                        <br>
-                        <p>
-                            Any failure short-circuits to the previous stage. For the LLM, this collapses the "freedom to improvise" layer by layer — the generated harness will not drift onto an internal helper, and it will not silently mask the library's real behavior with a wrong call sequence.
-                        </p>
-
-                        <p>
-                            One engineering boundary worth calling out: <strong>P3 / P4 are never delegated to an LLM as the sole decider.</strong> "Is this internal usage legitimate" and "is this entry on the real attack surface" are project-context-heavy judgements — a senior reviewer who has read the project's <code>SECURITY.md</code> and written similar harnesses can answer them; <strong>a third-party general-purpose LLM with no project context cannot</strong>. So Stage 1 (P4 / P3) of the reverse pipeline is a hybrid: LLM enumerates candidates, a static call graph supplies reachability, and a senior reviewer signs off on borderline cases. The LLM is a tool here, not the judge. That boundary is what makes 472 harnesses humanly accountable for quality.
-                        </p>
-                    </section>
 
                     <!-- Logic Group -->
                     <section>
@@ -172,23 +147,32 @@
                         </p>
                     </section>
 
-                    <!-- Pipeline -->
+                    <!-- Reverse Pipeline (why + four stages, merged) -->
                     <section>
-                        <h2>Four-Stage Pipeline: LG → API → Code → Validation</h2>
+                        <h2>Four Stages of the Reverse Pipeline</h2>
                         <p>
-                            The reverse-direction four principles get cashed out into four engineering stages. Each stage's output is the next stage's input; any stage that fails sends the work back to the LLM rather than forward.
+                            Part 1's audit only ran the mechanical part, the 16 sub-checks under P1.1 to P1.8 and P2.1 to P2.8. P3 and P4 stayed out of the static pass. The harnesses had been on production OSS-Fuzz for years and the entry points had been picked by upstream reviewers, so we sanity-checked P3 and P4 manually only on borderline cases. P3 and P4 are judgement calls, not mechanical checks. That is a luxury you only get when you are <em>catching</em> an existing harness.
+                        </p>
+                        <p>
+                            Generation does not get that luxury. The entry point is something <strong>we are choosing on the spot</strong>, with no upstream reviewer to pre-vet P4 (does the target sit on a real attack surface) or P3 (is the crash reachable from the public side). Skip those two and let an LLM write the code first, and a 60-second fuzz run will eventually report that the entry was wrong, leaving the rest of the work to be thrown away. So reversing is not a cosmetic reorder. It adds the two checks that audit could skip but generation cannot, and puts them ahead of everything else.
+                        </p>
+                        <p>
+                            The reverse principles cash out into four engineering stages. Each stage's output is the next stage's input. Any stage that fails sends the work back to the LLM rather than forward.
                         </p>
 
-                        <h3>Stage 1 — Logic Group Discovery (covers P4 / P3)</h3>
+                        <h3>Stage 1, Logic Group Discovery (covers P4 and P3)</h3>
                         <p>
-                            An LLM agent reads project source plus public headers, enumerates 5–10 candidate LGs, then a static call graph computes a danger score for each:
+                            An LLM agent reads project source plus public headers, enumerates 5 to 10 candidate LGs, then a static call graph computes a danger score for each.
                         </p>
                         <pre><code class="language-text">danger(LG) = sum_over_g_in_C( unsafe_ops_in(g) / depth_from_E_to_g )</code></pre>
                         <p>
-                            <code>unsafe_ops</code> covers <code>memcpy</code>, <code>malloc</code>, <code>free</code>, <code>strcpy</code>, <code>sprintf</code>, and similar primitives. The depth discount <code>1/d</code> keeps the ranking focused on attack surface that is <em>directly reachable from a public entry</em>, rather than getting drowned out by deep-internal detail. The top 5 LGs move on; P3 (reachability must originate from a public API) is verified at the same step.
+                            <code>unsafe_ops</code> covers <code>memcpy</code>, <code>malloc</code>, <code>free</code>, <code>strcpy</code>, <code>sprintf</code>, and similar primitives. The depth discount <code>1/d</code> keeps the ranking focused on attack surface that is <em>directly reachable from a public entry</em>, so deep-internal detail does not drown the score. The top 5 LGs move on. P3 (reachability must originate from a public API) is verified at the same step.
+                        </p>
+                        <p>
+                            One engineering boundary worth calling out here. <strong>P3 and P4 are never delegated to an LLM as the sole decider.</strong> Whether an internal usage is legitimate, and whether an entry sits on the real attack surface, are project-context-heavy judgements. A senior reviewer who has read the project's <code>SECURITY.md</code> and written similar harnesses can answer them. A third-party general-purpose LLM with no project context cannot. So Stage 1 runs as a hybrid. The LLM enumerates candidates, the static call graph supplies reachability, and a senior reviewer signs off on borderline cases. The LLM is a tool here, not the judge. That boundary is what makes 472 harnesses humanly accountable for quality.
                         </p>
 
-                        <h3>Stage 2 — API Protocol Research (covers P2)</h3>
+                        <h3>Stage 2, API Protocol Research (covers P2)</h3>
                         <p>
                             Once an LG is picked, a second agent reads the headers, comments, and key call-sites for every entry function and core function, then writes a protocol document covering:
                         </p>
@@ -196,33 +180,33 @@
                             <li>Call-order constraints (init before use before destroy).</li>
                             <li>Object lifetimes (who allocates, who frees, whether reuse across calls is allowed).</li>
                             <li>Parameter ranges (the valid interval of an <code>int</code>, the legal value set of an <code>enum</code>).</li>
-                            <li>Return-value semantics (NULL on failure / negative error code / out-param).</li>
+                            <li>Return-value semantics (NULL on failure, negative error code, out-param).</li>
                             <li>Cleanup APIs that must be paired with the entry call.</li>
                         </ul>
                         <br>
                         <p>
-                            Every line in this document <strong>must cite a <code>file:line</code></strong>. No improvisation. This is the crux of "P2 belongs before the harness is written" — once the harness exists, the LLM is anchored to the code it just wrote and no longer rewrites the protocol cleanly. Research the contract first, write the code second.
+                            Every line in this document <strong>must cite a <code>file:line</code></strong>. No improvisation. This is the crux of why P2 belongs before the harness is written. Once the harness exists, the LLM is anchored to the code it just wrote and no longer rewrites the protocol cleanly. Research the contract first, write the code second.
                         </p>
 
-                        <h3>Stage 3 — Static-Driven Build (covers P1 / P2)</h3>
+                        <h3>Stage 3, Static-Driven Build (covers P1 and P2)</h3>
                         <p>
-                            The harness-generator agent takes the Stage-2 document and writes the harness in one shot — full source, not line-by-line trial. Then a bounded build-fix loop: compile fails → feed the error back to the LLM → it patches → recompile → repeat until success or the iteration cap fires.
+                            The harness-generator agent takes the Stage 2 document and writes the harness in one shot, full source rather than line-by-line trial. Then a bounded build-fix loop. Compile fails, the error feeds back to the LLM, it patches, recompile, repeat until success or the iteration cap fires.
                         </p>
                         <p>
-                            Unlike "give the LLM a skeleton and let it fill blanks", we have the LLM produce the entire <code>LLVMFuzzerTestOneInput</code> together with its setup and teardown in a single pass. That keeps reasoning across functions intact — LLMs do far better on long-span tasks like this than on per-function wrapper generation.
+                            Unlike the "give the LLM a skeleton and let it fill blanks" pattern, we have the LLM produce the entire <code>LLVMFuzzerTestOneInput</code> together with its setup and teardown in a single pass. That keeps reasoning across functions intact, and LLMs do far better on long-span tasks like this than on per-function wrapper generation.
                         </p>
 
-                        <h3>Stage 4 — Adversarial Validation (covers P1 / P2)</h3>
+                        <h3>Stage 4, Adversarial Validation (covers P1 and P2)</h3>
                         <p>
-                            The last gate is adversarial probing. The system actively constructs adversarial inputs against the freshly generated harness and runs two probe types:
+                            The last gate is adversarial probing. The system actively constructs adversarial inputs against the freshly generated harness and runs two probe types.
                         </p>
                         <ul>
-                            <li><strong>Reach probe</strong> — set a GDB breakpoint on the target API and run the harness. If the breakpoint never fires, fuzz bytes are not flowing to the target and P1 has failed.</li>
-                            <li><strong>Run probe</strong> — libFuzzer + ASan + LSan, short duration. Any crash is immediately routed through the P1.1–P1.8 / P2.1–P2.8 sub-checks for triage. If the crash classifies as a harness-side violation, the harness goes back to the LLM; only crashes that classify as a real library behavior become bug candidates.
+                            <li><strong>Reach probe.</strong> Set a GDB breakpoint on the target API and run the harness. If the breakpoint never fires, fuzz bytes are not flowing to the target and P1 has failed.</li>
+                            <li><strong>Run probe.</strong> libFuzzer with ASan and LSan, short duration. Any crash is immediately routed through the P1.1 to P1.8 and P2.1 to P2.8 sub-checks for triage. If the crash classifies as a harness-side violation, the harness goes back to the LLM. Only crashes that classify as a real library behavior become bug candidates.</li>
                         </ul>
                         <br>
                         <p>
-                            The first probe asserts the harness <em>is</em> exercising the library; the second asserts the harness <em>is not</em> the bug. Only when both pass does the harness move to ready-for-discovery.
+                            The first probe asserts the harness <em>is</em> exercising the library. The second asserts the harness <em>is not</em> the bug. Only when both pass does the harness move to ready-for-discovery.
                         </p>
                     </section>
 
@@ -248,17 +232,17 @@
                             <div class="result-stat">
                                 <div class="stat-icon">flatbuffers</div>
                                 <div class="stat-value">8</div>
-                                <div class="stat-label">findings · 5 high</div>
+                                <div class="stat-label">findings</div>
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon">libvpx</div>
                                 <div class="stat-value">6</div>
-                                <div class="stat-label">findings · 2 high</div>
+                                <div class="stat-label">findings</div>
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon">openscreen</div>
                                 <div class="stat-value">4</div>
-                                <div class="stat-label">findings · 3 fixed upstream</div>
+                                <div class="stat-label">findings</div>
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon">libwebp / icu / libaom / spirv-tools</div>
