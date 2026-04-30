@@ -90,6 +90,9 @@
                             <strong>"I want an LLM to generate fuzz harnesses for me"</strong> — this goal has been getting heavy attention from both academia and industry over the past couple of years. But look one layer deeper and it rests on a premise almost everyone skips over: <em>what makes a harness "good"?</em> Without that definition, the only way to score what an LLM produces is "does it build" and "does it survive 60 seconds without crashing" — both necessary, neither sufficient. Prior work has measured FP rates as high as <strong>94%</strong>.
                         </p>
                         <p>
+                            Open-source projects on GitHub are increasingly being audited by AI tools at scale. Fuzzing has an outsized share of that attention because it ships with its own oracle in the sanitizer. A crash report with a sanitizer trace looks like ground truth, which makes fuzzing the default vehicle for AI-driven bug discovery and reproduction. The trouble shows up one layer down. When the harness itself has bugs, the fuzzer still produces a convincing-looking report. There is a sanitizer trace, a plausible call stack, the whole package. But the trace points at a problem no real caller can reproduce. The result is corrupted signal. Maintainers end up spending their attention separating real library bugs from harness-induced noise, and the "automation" and "scale" that AI research likes to claim quietly gets shifted downstream as triage burden.
+                        </p>
+                        <p>
                             That reduces the core question to a specification problem. <strong>Write down a source-level, checkable definition of what counts as a "good" fuzz harness.</strong>
                         </p>
                         <p>
