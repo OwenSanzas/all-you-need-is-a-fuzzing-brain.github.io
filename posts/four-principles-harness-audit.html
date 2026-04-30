@@ -121,7 +121,7 @@
                             <div class="result-stat">
                                 <div class="stat-icon" style="font-size: 2rem;">P3</div>
                                 <div class="stat-value">Security Boundary Respect</div>
-                                <div class="stat-label">只走公开 API,不绕入口校验</div>
+                                <div class="stat-label">鼓励走公开 API,可从公开侧复现</div>
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon" style="font-size: 2rem;">P4</div>
@@ -161,17 +161,20 @@
                             <strong>P2 违反 ⇒ 这个 crash 是 API 误用,不是库漏洞。</strong>上游会让你回家。
                         </p>
 
-                        <h3>P3 — Security Boundary Respect:只能从公开 API 进</h3>
+                        <h3>P3 — Security Boundary Respect:鼓励走公开 API</h3>
                         <p>
-                            真实攻击者只能从公开导出的 API 进。harness 如果通过 <code>extern</code> 把 <code>static</code> 声明的内部函数拽出来直接调,或者跳过公开入口的输入校验直接喂内部 chunk handler,产生的 crash 就脱离了真实威胁模型。
+                            真实攻击者通常只能从公开导出的 API 进。我们<strong>鼓励 harness 也尊重这条边界</strong> —— 通过 <code>extern</code> 把 <code>static</code> 函数拽出来直接调,或者跳过公开入口的输入校验直接喂内部 chunk handler,会让 fuzzer 进到没人能从外面到达的代码路径,产生的 crash 难以对应到真实威胁模型。
+                        </p>
+                        <p>
+                            P3 不是一刀切的"禁止用内部符号"。如果你 <strong>100% 确认</strong>这个内部用法是合理的(例如该内部状态机的输入语义和某个公开 API 的中间状态完全等价),或者能<strong>证明同样的 crash 也可以从公开 API 复现</strong>,这种 case 是允许的。判断标准是:能不能用一个只调公开 API 的 harness 把同一个 crash 重现出来 —— 能,P3 通过;不能,P3 失败。
                         </p>
                         <ul>
-                            <li>只调公开头文件里声明的函数,不通过 friend / extern 拽内部符号</li>
-                            <li>不绕过公开入口的输入校验 —— 校验本身是库交付物的一部分</li>
-                            <li>内部 chunk handler / callback 必须从公开入口"间接"触达,不能直接调用。比如直接调 <code>png_handle_IHDR</code> 就不算 —— 这条路径是任何真实调用者都构造不出的</li>
+                            <li><strong>鼓励的写法</strong>:调公开头文件里声明的函数,不绕过公开入口的输入校验 —— 校验本身是库交付物的一部分</li>
+                            <li><strong>谨慎使用内部符号</strong>:若 harness 必须用 <code>static</code> / friend / 内部 chunk handler,需要在 PR 里明确说明合理性,并附上"同样行为能在公开侧复现"的证据</li>
+                            <li><strong>反例</strong>:直接调 <code>png_handle_IHDR</code> 触发 crash,但任何 PNG 文件都构造不出对应内部状态 —— 这是 P3 失败,因为公开侧无法复现</li>
                         </ul>
                         <p>
-                            <strong>P3 违反 ⇒ 这个 crash 在没人能到达的代码路径上。</strong>哪怕真崩了也不修。
+                            <strong>P3 违反 ⇒ 这个 crash 在没人能从公开侧到达的代码路径上。</strong>哪怕真崩了也很难修 —— 上游通常会标 NOT_REPRODUCIBLE_FROM_PUBLIC_API。
                         </p>
 
                         <h3>P4 — Entry Point Adequacy:目标必须在真实攻击面上</h3>

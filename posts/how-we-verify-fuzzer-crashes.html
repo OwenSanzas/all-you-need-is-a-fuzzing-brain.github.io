@@ -109,7 +109,7 @@
                         <ul>
                             <li><strong>P1(harness 自身)</strong> —— 这条路径上的 harness 代码,有没有用未初始化变量?有没有 use-after-free?有没有忘记释放?fuzz bytes 真的流到那个崩溃位置了,还是被 harness 内部覆盖了?</li>
                             <li><strong>P2(API 协议)</strong> —— 这条路径上调用的库 API,顺序对吗?对象状态对吗?参数在合法范围吗?有没有 set_params 走在 init_ex 之前那种典型错位?</li>
-                            <li><strong>P3(安全边界)</strong> —— 这条路径有没有从 <code>extern</code> 拽出来的 static 函数?有没有跳过公开入口的输入校验?如果攻击者只能从公开 API 进,他能到达这一帧吗?</li>
+                            <li><strong>P3(安全边界)</strong> —— 这条路径有没有从 <code>extern</code> 拽出来的 static 函数?有没有跳过公开入口的输入校验?判断标准不是"是否用了内部符号"(我们鼓励但不强制走公开 API),而是<strong>同样的 crash 能不能在只调公开 API 的 harness 上复现</strong>。能 → P3 通过;不能 → P3 失败,这条 crash 在攻击者从外面够不着的代码路径上。</li>
                             <li><strong>P4(攻击面)</strong> —— 这条路径上的 fuzz 入口,在库的<em>当前</em>公开攻击面上吗?是不是某个 deprecated demo 的入口?</li>
                         </ul>
                         <p>
