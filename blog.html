@@ -52,10 +52,10 @@
                         <span class="post-readtime">14 min read</span>
                     </div>
                     <h2 class="post-title">
-                        <a href="posts/four-principles-harness-audit.html">Harness 也会有 bug:基于四原则的 OSS-Fuzz Harness 审计</a>
+                        <a href="posts/four-principles-harness-audit.html">Harnesses Have Bugs Too: A Four-Principles Audit of 586 OSS-Fuzz Harnesses</a>
                     </h2>
                     <p class="post-excerpt">
-                        在跑 fuzzer 之前,先把 harness 自己审一遍。我们用四原则在 70 个 OSS-Fuzz 项目的 586 个生产 harness 上做了一轮审计,拦下 14 个本会被错报的 FP,提了 53 个修复 PR,顺带把两个被失效 harness 长期掩盖的真上游 bug 暴露出来(含 OpenSSL 潜伏 25 年的那条)。
+                        Before generating "good" fuzz harnesses, we need a checkable definition of "good". This post offers our answer — the Four Principles — and validates them by auditing 586 production OSS-Fuzz harnesses across 70 projects. 53 fix PRs filed, 45 verified or merged, 14 false positives caught at audit, and two real upstream bugs surfaced when broken harnesses were repaired (including a 25-year-old latent in OpenSSL DES).
                     </p>
                     <div class="post-highlights">
                         <span class="highlight-tag">586 Audited</span>
