@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 春季阶段更新:24 个新项目里又找到 41 个 0day,加三篇方法论 - FuzzingBrain</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <style>
+        .results-banner {
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+        .results-banner .stat-label {
+            color: var(--text-secondary);
+        }
+        .result-stat {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html" class="logo-link">
+                        <img src="../assets/images/fuzzbrain.jpg" alt="FuzzingBrain Logo" class="brain-logo">
+                        <h1>FuzzingBrain</h1>
+                    </a>
+                </div>
+                <button class="mobile-menu-btn" aria-label="Toggle navigation menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                <nav class="nav" aria-label="Main navigation">
+                    <a href="../documentation.html">Docs</a>
+                    <a href="../quickstart.html">Quickstart</a>
+                    <a href="../blog.html" class="nav-active">Blog</a>
+                    <a href="../index.html#results">Results</a>
+                    <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="nav-cta" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </nav>
+            </div>
+        </header>
+
+        <article class="blog-post" id="main-content">
+            <div class="post-header">
+                <div class="section-content">
+                    <nav class="breadcrumb"><a href="../index.html">Home</a><span class="separator">/</span><a href="../blog.html">Blog</a><span class="separator">/</span><span class="current">2026 春季阶段更新(中文版)</span></nav>
+                    <div class="post-meta">
+                        <span class="post-date">2026 年 4 月 30 日</span>
+                        <span class="post-category">阶段性更新</span>
+                        <span class="post-readtime">8 分钟阅读</span>
+                        <span class="post-readtime"><a href="spring-2026-campaign-update.html" style="color: var(--primary-light);">English version →</a></span>
+                    </div>
+                    <h1 class="post-title-main">2026 春季阶段更新:24 个新项目里又找到 41 个 0day,加三篇方法论</h1>
+                    <p class="post-subtitle">跟<a href="zero-day-vulnerability-discoveries.html">上一次</a>不同。上次的阶段性更新汇报了 26 个项目里的 62 个漏洞,大多来自审计 OSS-Fuzz 上已有的 harness、工作面在通用开源软件。这一篇关注的是<strong>为更难的目标生成新 harness</strong>。从 2 月到现在,我们又加了 <strong>41 个新漏洞,跨 24 个全新项目</strong>,几乎都落在 Chromium 依赖图里、或我们之前没碰过的安全敏感库里。同时这次发布配套三篇方法论博文,按顺序记录新 harness 是怎么构建的、误报率为什么能压在 5% 以下。</p>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <div class="section-content">
+
+                    <!-- Hero Stats -->
+                    <section class="results-hero">
+                        <div class="results-banner">
+                            <h2>总览数字</h2>
+                            <div class="results-stats">
+                                <div class="result-stat">
+                                    <div class="stat-icon">103</div>
+                                    <div class="stat-value">已上报漏洞</div>
+                                    <div class="stat-label">累计 · <strong style="color: #fbbf24;">+41(自 2 月)</strong></div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">56</div>
+                                    <div class="stat-value">覆盖项目</div>
+                                    <div class="stat-label">C / C++ 生态 · <strong style="color: #fbbf24;">+30(自 2 月)</strong></div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">70</div>
+                                    <div class="stat-value">已 confirm 或 fix</div>
+                                    <div class="stat-label">维护者认可 · <strong style="color: #fbbf24;">+27(自 2 月)</strong></div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="stat-icon">&lt;5%</div>
+                                    <div class="stat-value">误报率</div>
+                                    <div class="stat-label">所有上报中</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What's Changed -->
+                    <section>
+                        <h2>这次跟上次相比有什么变化</h2>
+                        <p>
+                            <a href="zero-day-vulnerability-discoveries.html">上一篇阶段更新</a>(2 月)汇报了 26 个项目里的 62 个漏洞,大多来自对 OSS-Fuzz 已有 harness 的审计,工作面是通用开源软件。从那以后这段工作做的事不一样:重心移到<strong>生成新的 harness</strong>,目标是一开始就没什么 fuzz 覆盖的项目;目标列表往安全敏感软件再深入了一层。
+                        </p>
+                        <p>
+                            所有这些工作都跑在一条主线上,我们叫它<strong>四原则(Four Principles)</strong>。这是四条源码层的检查,每个 harness 在我们认为它产出的 crash 可信之前都得过一遍。简单说就是:(1) harness 自己的代码无 bug;(2) 调用库 API 时遵守库的协议(顺序、生命周期、参数都对);(3) 通过库的<em>公开攻击面</em>驱动它(找出来的 crash 在生产环境里是真能复现的);(4) 选的 fuzz 入口要真的位于一个有意义的攻击面上,而不是某个 no-op helper。第一篇方法论博文里详细介绍了这四条。
+                        </p>
+                        <p>
+                            另外几个 hero 卡里没显示的数字,值得单独提一下。
+                        </p>
+
+                        <div class="performance-stats">
+                            <div class="stat-box">
+                                <div class="stat-number">472</div>
+                                <div class="stat-label">生成的 Harness</div>
+                                <div class="stat-detail">两周内跨 Chrome 依赖图全部生成 + 验证 + 跑过</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">52</div>
+                                <div class="stat-label">内部 verify 拦截</div>
+                                <div class="stat-detail">52 个 fuzzer crash 看着像真 bug,但被我们自己的 verify 流程查出有问题,从来没发给上游维护者</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">59%</div>
+                                <div class="stat-label">本期 confirm 率</div>
+                                <div class="stat-detail">41 个新发现里,24 个已被维护者 confirm 或 merge</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">2</div>
+                                <div class="stat-label">被 harness 长期掩盖的 bug</div>
+                                <div class="stat-detail">修对一个有问题的 harness,两个本来就在库里、被遮住的 bug 浮了出来</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Three Milestones -->
+                    <section>
+                        <h2>三个里程碑、三篇方法论</h2>
+                        <p>
+                            上面的转向背后是三个连贯的里程碑。先要有一份"什么算好 harness"的可勾选定义;然后用这份定义生成新 harness、找新 bug,以 Chromium 当 showcase;最后给每个候选 crash 上一道 verify 闸门,把误报率压住。每个里程碑对应一篇博文,卡片直接点进去:
+                        </p>
+
+                        <div class="posts-grid" style="margin-top: var(--spacing-lg);">
+                            <a href="four-principles-harness-audit-zh.html" style="display: block; text-decoration: none; color: var(--text-primary);">
+                                <article class="post-preview published" style="height: 100%;">
+                                    <div class="post-meta">
+                                        <span class="post-date">2026 年 4 月 30 日</span>
+                                        <span class="post-category">方法论 · Milestone 1</span>
+                                    </div>
+                                    <h3 class="post-title" style="color: var(--text-primary);">定义"好 harness"是什么</h3>
+                                    <p class="post-excerpt"><strong>Harness 也会有 bug:基于四原则审计 586 个 OSS-Fuzz Harness。</strong>四原则清单(P1 Logic Correctness / P2 API Protocol Compliance / P3 Security Boundary Respect / P4 Entry Point Adequacy),用审计 586 个生产 OSS-Fuzz harness 来验证。提了 53 个 fix PR,45 个被维护者验证或合并,14 个误报在审计阶段就拦住,2 个被失效 harness 长期掩盖的真上游 bug 被翻出来(含 OpenSSL DES 那条潜伏 25 年的)。</p>
+                                    <div class="published-label">阅读 Milestone 1 →</div>
+                                </article>
+                            </a>
+                            <a href="logic-groups-and-reverse-four-principles-zh.html" style="display: block; text-decoration: none; color: var(--text-primary);">
+                                <article class="post-preview published" style="height: 100%;">
+                                    <div class="post-meta">
+                                        <span class="post-date">2026 年 4 月 30 日</span>
+                                        <span class="post-category">方法论 · Milestone 2</span>
+                                    </div>
+                                    <h3 class="post-title" style="color: var(--text-primary);">在 Chromium 上生成好 harness、找新 bug</h3>
+                                    <p class="post-excerpt"><strong>两周钻进 Chromium:472 个 Harness、30 个漏洞已上报上游。</strong>四原则反过来用(P4 → P1),配合 Logic Group 做语义切分。两周内跨 58 个 Chromium 链路库(libvpx、libwebp、libaom、openscreen、dawn、pdfium、sqlite、v8 …)生成 472 个 harness。提了 30 个漏洞上游,verify 阶段拦住 52 个候选。</p>
+                                    <div class="published-label">阅读 Milestone 2 →</div>
+                                </article>
+                            </a>
+                            <a href="how-we-verify-fuzzer-crashes-zh.html" style="display: block; text-decoration: none; color: var(--text-primary);">
+                                <article class="post-preview published" style="height: 100%;">
+                                    <div class="post-meta">
+                                        <span class="post-date">2026 年 4 月 30 日</span>
+                                        <span class="post-category">方法论 · Milestone 3</span>
+                                    </div>
+                                    <h3 class="post-title" style="color: var(--text-primary);">上报前先 verify 每个 crash</h3>
+                                    <p class="post-excerpt"><strong>我们怎么 verify fuzzer 的 crash:四原则、两次复现、和 Security Proxies。</strong>让上线误报率在 5% 以下的 verify 流水线。三道闸:对具体 crash trace 重跑四原则;两次独立复现(harness 重放 + 公开 API repro);跟维护者文档化的 threat model 对齐的 per-library Security Proxies。</p>
+                                    <div class="published-label">阅读 Milestone 3 →</div>
+                                </article>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Severity -->
+                    <section>
+                        <h2>新一批 41 个的严重程度</h2>
+                        <p>
+                            新一批里 High 级别接近一半。内存破坏类(heap overflow / UAF / OOB)是主流,DoS 和 unbounded allocation 占大多数其余。本批没有 Critical,Low 两个。
+                        </p>
+                        <div class="severity-bar">
+                            <div class="seg-high" style="width: 49%;" title="High: 20"></div>
+                            <div class="seg-medium" style="width: 46%;" title="Medium: 19"></div>
+                            <div class="seg-low" style="width: 5%;" title="Low: 2"></div>
+                        </div>
+                        <div class="severity-legend">
+                            <div class="legend-item"><div class="legend-dot" style="background: #f59e0b;"></div> High: 20 (49%)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #6366f1;"></div> Medium: 19 (46%)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #94a3b8;"></div> Low: 2 (5%)</div>
+                        </div>
+                    </section>
+
+                    <!-- Bug Classes -->
+                    <section>
+                        <h2>找到的 bug 类别</h2>
+                        <p>
+                            新一批偏向多媒体、parser、序列化代码里典型的内存安全类。Heap buffer overflow 排第一;接着是 JSON 和 HTTP/3 parser 的 DoS,以及 deserializer 里的几类分配相关 bug。
+                        </p>
+                        <div class="type-grid">
+                            <div class="type-item"><span class="type-name">Heap Buffer Overflow</span><span class="type-count">9</span></div>
+                            <div class="type-item"><span class="type-name">Denial-of-Service</span><span class="type-count">4</span></div>
+                            <div class="type-item"><span class="type-name">Memory Leak</span><span class="type-count">3</span></div>
+                            <div class="type-item"><span class="type-name">Use-After-Free</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Heap Use-After-Free</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">NULL Pointer Deref</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Unbounded Allocation</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Uncontrolled Allocation</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Assertion Failure</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Integer Overflow</span><span class="type-count">2</span></div>
+                            <div class="type-item"><span class="type-name">Stack Overflow</span><span class="type-count">1</span></div>
+                            <div class="type-item"><span class="type-name">Double-Free</span><span class="type-count">1</span></div>
+                            <div class="type-item"><span class="type-name">其它(parser / OOB / FPE)</span><span class="type-count">9</span></div>
+                        </div>
+                    </section>
+
+                    <!-- Project Highlights -->
+                    <section>
+                        <h2>新发现落在哪些项目上</h2>
+                        <p>
+                            24 个全新项目几乎都落在 Chromium 依赖图、或在部署面广的安全敏感库上。下面列出有多个发现、或是第一次碰就被 confirm/fix 的项目卡片(单发现项目放在表格里)。
+                        </p>
+
+                        <div class="project-cards">
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>Chromium &amp; Google Vendor Stack</h3>
+                                    <span class="fix-rate fix-rate-100">多个已 confirm</span>
+                                </div>
+                                <ul>
+                                    <li><code>WebPMuxAssemble</code> 中的 NULL 指针解引用(libwebp)— <a href="https://issues.webmproject.org/issues/497882857" class="vuln-link">webmproject#497882857</a>(已 fix)</li>
+                                    <li>VP9 编码器整数溢出 / 断言失败 — <a href="https://issues.webmproject.org/issues/497896136" class="vuln-link">webmproject#497896136</a>(已 confirm)</li>
+                                    <li>Y4M Buffer Size 计算整数溢出 — <a href="https://issues.webmproject.org/issues/501135996" class="vuln-link">webmproject#501135996</a></li>
+                                    <li><code>SharpYuvConvert</code> OOB 读 — <a href="https://issues.webmproject.org/issues/501147575" class="vuln-link">webmproject#501147575</a></li>
+                                    <li>PDFium XObject 不受控内存耗尽 — <a href="https://issues.chromium.org/issues/497514412" class="vuln-link">chromium#497514412</a>(已 confirm)</li>
+                                    <li>FlatBuffers Parser Double-Free — <a href="https://github.com/google/flatbuffers/issues/9009" class="vuln-link">flatbuffers#9009</a>(已 confirm)</li>
+                                    <li>FlexBuffers ToString 堆溢出 — <a href="https://github.com/google/flatbuffers/issues/9008" class="vuln-link">flatbuffers#9008</a>(已 confirm)</li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>libaom (AV1)</h3>
+                                    <span class="fix-rate fix-rate-100">3/3 已 ack</span>
+                                </div>
+                                <ul>
+                                    <li><code>av1_restore_layer_context</code> 堆溢出 — <a href="https://issues.chromium.org/issues/501657371" class="vuln-link">chromium#501657371</a>(已 fix)</li>
+                                    <li><code>aom_rb_read_literal</code> 断言失败 — <a href="https://aomedia.issues.chromium.org/issues/502133197" class="vuln-link">aomedia#502133197</a>(已 confirm)</li>
+                                    <li>SVC 编码器无限重编码循环导致 DoS — <a href="https://issues.chromium.org/issues/505976409" class="vuln-link">chromium#505976409</a>(已 confirm)</li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>openscreen (Cast Streaming)</h3>
+                                    <span class="fix-rate fix-rate-100">3/3 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li>ANSWER Parser 预认证 DoS(jsoncpp 非对象 find)— <a href="https://issues.chromium.org/issues/505902443" class="vuln-link">chromium#505902443</a></li>
+                                    <li><code>ReceiverMessage::Parse</code> 预认证 DoS — <a href="https://issues.chromium.org/issues/505902444" class="vuln-link">chromium#505902444</a></li>
+                                    <li><code>SenderMessage::Parse</code> 预认证 DoS — <a href="https://issues.chromium.org/issues/505947418" class="vuln-link">chromium#505947418</a></li>
+                                    <li>三个一起在 <a href="https://chromium-review.googlesource.com/c/openscreen/+/7801091" class="vuln-link">CL 7801091</a> 中合并</li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>tidy-html5</h3>
+                                    <span class="fix-rate fix-rate-zero">0/3 等审核</span>
+                                </div>
+                                <ul>
+                                    <li><code>prvTidynewStack</code> 内存泄漏 — <a href="https://github.com/htacg/tidy-html5/issues/1177" class="vuln-link">tidy-html5#1177</a></li>
+                                    <li>错误缓冲区无界增长导致 OOM — <a href="https://github.com/htacg/tidy-html5/issues/1176" class="vuln-link">tidy-html5#1176</a></li>
+                                    <li>GDoc CleanNode use-after-free — <a href="https://github.com/htacg/tidy-html5/issues/1175" class="vuln-link">tidy-html5#1175</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>flatbuffers</h3>
+                                    <span class="fix-rate fix-rate-100">2/2 已 ack</span>
+                                </div>
+                                <ul>
+                                    <li><code>flatbuffers::Verify</code> Reflection Verifier 堆溢出 — <a href="https://github.com/google/flatbuffers/issues/9040" class="vuln-link">flatbuffers#9040</a>(已 confirm)</li>
+                                    <li>FlexBuffers <code>toString</code> 验证后仍发生堆溢出 — <a href="https://github.com/google/flatbuffers/issues/9041" class="vuln-link">flatbuffers#9041</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>libvpx</h3>
+                                    <span class="fix-rate fix-rate-100">2/2 已 ack</span>
+                                </div>
+                                <ul>
+                                    <li>VP9 编码器中途 reconfig 导致堆溢出 — <a href="https://issues.webmproject.org/issues/501696590" class="vuln-link">webmproject#501696590</a>(已 confirm)</li>
+                                    <li>VP8 解码器错误隐藏路径无界分配 — <a href="https://issues.webmproject.org/issues/501696591" class="vuln-link">webmproject#501696591</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>libvorbis</h3>
+                                    <span class="fix-rate fix-rate-zero">0/2 等审核</span>
+                                </div>
+                                <ul>
+                                    <li>Residue 解码除零 — <a href="https://github.com/xiph/vorbis/issues/124" class="vuln-link">vorbis#124</a></li>
+                                    <li>Header 解析阶段内存泄漏 — <a href="https://github.com/xiph/vorbis/issues/125" class="vuln-link">vorbis#125</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>FreeRDP</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li>NTLM AuthenticateMessage 解析失败路径上的预认证内存泄漏 — <a href="https://github.com/FreeRDP/FreeRDP/pull/12609" class="vuln-link">FreeRDP#12609</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>libavif</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li>Android JNI 直接 ByteBuffer 入口处的 signed-int length 符号扩展导致堆溢出 — <a href="https://github.com/AOMediaCodec/libavif/pull/3178" class="vuln-link">libavif#3178</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>HarfBuzz</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li>fontations glyph-name 回调在 size==0 时 OOB 写 — <a href="https://github.com/harfbuzz/harfbuzz/pull/5947" class="vuln-link">harfbuzz#5947</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>nDPI</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li><code>ndpi_decode_tls_blocks</code> 中 <code>ndpi_hex_decode</code> 在借来的非 NUL 终止 buffer 上做 sscanf 越界 — <a href="https://github.com/ntop/nDPI/pull/3163" class="vuln-link">nDPI#3163</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>OTS (Chrome 字体 sanitizer)</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li><code>TABLE_ACTION_PASSTHRU</code> 模式下 <code>ProcessGeneric</code> NULL 解引用 — <a href="https://github.com/khaledhosny/ots/pull/309" class="vuln-link">ots#309</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>SQLite</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li><code>sqlite3Fts5PoslistNext64</code> 因 realloc-moved LookaheadReader 引发的 heap-use-after-free(FTS5 路径)。</li>
+                                </ul>
+                            </div>
+
+                            <div class="project-card">
+                                <div class="project-card-header">
+                                    <h3>ICU</h3>
+                                    <span class="fix-rate fix-rate-100">1/1 已 fix</span>
+                                </div>
+                                <ul>
+                                    <li><code>TransliterationRule</code> 析构函数中的 use-after-free / NULL 解引用 — <a href="https://unicode-org.atlassian.net/browse/ICU-23365" class="vuln-link">ICU-23365</a>(在 ICU 79.1 修复)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3>其它新项目发现</h3>
+                        <p>本期单一发现的项目放在下表。</p>
+                        <div class="vuln-table-wrapper">
+                            <table class="vuln-table">
+                                <thead>
+                                    <tr>
+                                        <th>项目</th>
+                                        <th>漏洞</th>
+                                        <th>严重性</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Cap'n Proto</td>
+                                        <td><a href="https://github.com/capnproto/capnproto/issues/2608" class="vuln-link">Text Codec Lexer 栈溢出</a></td>
+                                        <td><span class="severity-high">High</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>crashpad</td>
+                                        <td><a href="https://issues.chromium.org/issues/501471719" class="vuln-link">MemorySnapshotMinidump 无界分配</a></td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dawn</td>
+                                        <td><a href="https://issues.chromium.org/issues/502133194" class="vuln-link">BlobCache Stream 无界分配</a></td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>JavaScriptCore</td>
+                                        <td>DFG StrengthReductionPhase 错误地重置 m_changed 标志</td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已 fix</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>LevelDB</td>
+                                        <td><a href="https://github.com/google/leveldb/issues/1318" class="vuln-link">恶意 SSTable Block Handle 触发 ReadBlock 无界分配</a></td>
+                                        <td><span class="severity-high">High</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>libheif</td>
+                                        <td><a href="https://github.com/strukturag/libheif/issues/1746" class="vuln-link">heif_image_crop 堆溢出</a></td>
+                                        <td><span class="severity-high">High</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>libpng</td>
+                                        <td><a href="https://github.com/pnggroup/libpng/security/advisories/GHSA-qvg3-h654-xq3j" class="vuln-link">png_zlib_inflate 因 pCAL 之后陈旧 next_in 引发 use-after-free</a></td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已上报(GHSA)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>OpenCV</td>
+                                        <td><a href="https://github.com/opencv/opencv/issues/28619" class="vuln-link">YAML parseKey() 在空 key 时堆溢出</a></td>
+                                        <td><span class="severity-low">Low</span></td>
+                                        <td><span class="status-confirmed">已 fix</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>OpenSSL</td>
+                                        <td><a href="https://github.com/openssl/openssl/issues/30284" class="vuln-link">DES OFB/CFB64 因 num 参数未检查导致栈溢出 — 潜伏 25 年</a></td>
+                                        <td><span class="severity-low">Low</span></td>
+                                        <td><span class="status-confirmed">已 fix</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>QUICHE</td>
+                                        <td><a href="https://issues.chromium.org/issues/501696594" class="vuln-link">HTTP/3 帧解码器 QUICHE_BUG 引发预认证 DoS</a></td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>RapidJSON</td>
+                                        <td><a href="https://github.com/Tencent/rapidjson/issues/2373" class="vuln-link">Regex 引擎断言失败</a></td>
+                                        <td><span class="severity-high">High</span></td>
+                                        <td><span class="status-confirmed">已上报</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>V8</td>
+                                        <td><a href="https://issuetracker.google.com/issues/502293786" class="vuln-link">V8 解释器 Bytecode Mismatch(正确性 bug)</a></td>
+                                        <td><span class="severity-medium">Medium</span></td>
+                                        <td><span class="status-confirmed">已 confirm</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Timeline -->
+                    <section>
+                        <h2>时间线</h2>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026 年 2 月</div>
+                                <h4>上次阶段更新</h4>
+                                <p>26 个项目里 62 个漏洞,大多通过审计 OSS-Fuzz 已有 harness 拿到的、工作面在通用开源软件上。</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026 年 3 月</div>
+                                <h4>转向生成阶段</h4>
+                                <p>方法论先在已有 harness 上设计并验证。修对一个 harness 之后顺手挖出两个被掩盖的真上游 bug(OpenSSL DES 25 年的栈越界,以及 tidy-html5 lexer 的内存泄漏)。</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026 年 4 月</div>
+                                <h4>两周 Chromium 大跑</h4>
+                                <p>跨 58 个 Chrome 链路库生成 472 个 harness。30 个漏洞已上报上游、其中 16 个已被 confirm。Verify 阶段拦下 52 个候选,没让任何一个抵达维护者。</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026 年 4 月 30 日</div>
+                                <h4>方法论系列发布</h4>
+                                <p>三篇方法论 + 这篇阶段更新今天一起发出。累计数字:103 个上报、跨 56 个项目、70 个被维护者认可、误报率 &lt; 5%。</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What's Next -->
+                    <section class="future-section">
+                        <h2>下一步</h2>
+                        <p>
+                            33 个还在 in-flight 的提交将继续通过同一套 Security Proxies 跟进。12 个已 confirm 但还没 merge 的等上游维护者时间。下一批 harness 生成会拓宽 Chromium 依赖图(mojo IPC、Skia 是下一组),并把同一套四原则框架用到 Chrome 之外的几个网络栈库上。
+                        </p>
+                        <div class="next-steps">
+                            <div class="next-step">
+                                <h4>更广的 Chromium 覆盖</h4>
+                                <p>mojo IPC、Skia rendering,以及还没被深入 fuzz 的剩余 Chrome vendor 库。</p>
+                            </div>
+                            <div class="next-step">
+                                <h4>Chrome 之外</h4>
+                                <p>把 generate-and-verify 流水线扩到 fuzz 覆盖率较弱的网络栈、数据库库。</p>
+                            </div>
+                            <div class="next-step">
+                                <h4>开放数据集</h4>
+                                <p>审计结果、Logic Group 定义、Security Proxy YAML、harness 源码都继续在公开 repo 发布。</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="cta-section">
+                        <div class="cta-content">
+                            <h2>了解方法论</h2>
+                            <p>四原则框架、Logic Group 抽象、Security Proxies 都已开源,欢迎复用。</p>
+                            <div class="cta-buttons">
+                                <a href="https://github.com/o2lab/afc-crs-all-you-need-is-a-fuzzing-brain" class="btn btn-primary">
+                                    <span>访问 GitHub</span>
+                                </a>
+                                <a href="https://fuzzingbrain.github.io/FuzzingBrain-Leaderboard/" class="btn btn-secondary">
+                                    <span>FuzzingBrain Leaderboard</span>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <p style="text-align: right; margin-top: 3rem; color: #888; font-style: italic;">
+                        — Ze Sheng · Team FuzzingBrain
+                    </p>
+
+                </div>
+            </div>
+        </article>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>&copy; 2026 All You Need Is A Fuzzing Brain Research Team</p>
+                    <p>用 AI 推进自动化漏洞发现</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/fuzzingbrain"><img src="../assets/images/fuzzbrain.jpg" alt="GitHub" class="footer-logo"> GitHub</a>
+                    <a href="https://aicyberchallenge.com/">DARPA AIxCC</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../script.js"></script>
+</body>
+</html>
