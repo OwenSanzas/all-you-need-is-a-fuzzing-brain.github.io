@@ -66,8 +66,8 @@
                                 </div>
                                 <div class="result-stat">
                                     <div class="stat-icon">53</div>
-                                    <div class="stat-value">质量违规</div>
-                                    <div class="stat-label">85% confirm · 66% merged</div>
+                                    <div class="stat-value">质量违规 + fix PR</div>
+                                    <div class="stat-label">45 验证或修复 (85%) · 35 已合并 (66%)</div>
                                 </div>
                                 <div class="result-stat">
                                     <div class="stat-icon">14</div>
@@ -99,7 +99,7 @@
                             这篇给出的答案是<strong>四原则</strong>。下一节先把准则本身列清楚。
                         </p>
                         <p>
-                            但只有定义还不够 —— <strong>怎么知道这套准则真的对?</strong>办法是用它去识别坏 harness:如果它能在大批生产代码上稳定地挑出那些有问题的 harness、并且我们提的修复能被维护者认同,这套准则就站得住。<em>识别坏 harness 不是"应用",是"验证"。</em>所以我们把它拉到 OSS-Fuzz 上跑了一遍 —— 70 个项目、586 个生产 harness。结果是这套准则识别出 53 个违规、其中 45 个被维护者 confirm、35 个被 merge,中间还<strong>拦下 14 个本来会被错报的 FP</strong>,顺带把<strong>两个被失效 harness 长期掩盖的真上游 bug</strong>(含一个潜伏 25 年的 OpenSSL 老 bug)暴露出来。
+                            但只有定义还不够 —— <strong>怎么知道这套准则真的对?</strong>办法是用它去识别坏 harness:如果它能在大批生产代码上稳定地挑出那些有问题的 harness、并且我们提的修复能被维护者认同,这套准则就站得住。<em>识别坏 harness 不是"应用",是"验证"。</em>所以我们把它拉到 OSS-Fuzz 上跑了一遍 —— 70 个项目、586 个生产 harness。结果是这套准则识别出 <strong>53 个违规并各自给出修复 PR</strong>,其中 <strong>45 个(85%)被维护者验证或修复</strong>(35 个已合并、剩余 10 个 acknowledge 为真问题但 PR 未合),中间还<strong>拦下 14 个本来会被错报的 FP</strong>,顺带把<strong>两个被失效 harness 长期掩盖的真上游 bug</strong>(含一个潜伏 25 年的 OpenSSL 老 bug)暴露出来。
                         </p>
                         <p>
                             下面分别讲清楚:四原则本体(下一节),拉到 OSS-Fuzz 上跑出来的验证结果(再下一节),以及那两个被遮的真上游 bug(最后)。
@@ -283,12 +283,12 @@
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon">45</div>
-                                <div class="stat-value">已 confirm</div>
-                                <div class="stat-label">85% 接受率</div>
+                                <div class="stat-value">验证或修复</div>
+                                <div class="stat-label">85%,含下面的 35</div>
                             </div>
                             <div class="result-stat">
                                 <div class="stat-icon">35</div>
-                                <div class="stat-value">已合并</div>
+                                <div class="stat-value">已合并(子集)</div>
                                 <div class="stat-label">66% 上线 OSS-Fuzz</div>
                             </div>
                             <div class="result-stat">
@@ -362,7 +362,7 @@
                     <section>
                         <h2>维护者反馈:不止是合并 PR</h2>
                         <p>
-                            这次审计的结尾不是 35 个 PR 合进 OSS-Fuzz 然后散场。<strong>有 4 个维护者团队进一步把我们的 harness 或衍生 artifact 集成进了他们自己的工程化流程</strong>:
+                            这次审计的结尾不是 35 个 PR 合进 OSS-Fuzz 然后散场(剩下 10 个维护者已 acknowledge 但 PR 还在排队)。<strong>有 4 个维护者团队进一步把我们的 harness 或衍生 artifact 集成进了他们自己的工程化流程</strong>:
                         </p>
                         <ul>
                             <li><strong>OpenSSL</strong> 直接采纳了我们对 <code>quic_server</code> harness 的重写版本(P1+P2 双修复),分支覆盖率提到 2.64×。这个版本现在跑在 OSS-Fuzz 的 OpenSSL 任务里。</li>
@@ -416,7 +416,7 @@
                             <li>给上游的每个 PR 必须附 root-cause + 修复 + 覆盖率不降的证据,不能只甩 sanitizer trace。</li>
                         </ol>
                         <p>
-                            这套流程的成本是有限的:586 个 harness 平均每个 10 分钟、10 并发,总开销大约 $720。换来的是 14 个永远不会成为噪声报告的 FP、35 个被上游接受的修复、以及两个被失效 harness 长期掩盖的真上游 bug(含 OpenSSL 潜伏 25 年的那条)。这笔账无论从工程化成本还是 ecosystem trust 角度都是正的。
+                            这套流程的成本是有限的:586 个 harness 平均每个 10 分钟、10 并发,总开销大约 $720。换来的是 14 个永远不会成为噪声报告的 FP、45 个被维护者验证或修复的 PR(其中 35 个已 merge)、以及两个被失效 harness 长期掩盖的真上游 bug(含 OpenSSL 潜伏 25 年的那条)。这笔账无论从工程化成本还是 ecosystem trust 角度都是正的。
                         </p>
                     </section>
 
