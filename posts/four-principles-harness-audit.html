@@ -168,7 +168,7 @@
 
                         <h3>P2 — API Protocol Compliance:harness 必须遵守库的契约</h3>
                         <p>
-                            库的每个 API 都有自己的使用协议:什么时候 init、什么时候 destroy、参数允许哪些范围、返回值需不需要检查、哪些调用必须配对。LLM 生成的 harness 经常违反这些协议,因为它无法从单个函数签名看出整个状态机。具体的 8 条 P2 子检查在下文 P1.1–P2.8 清单里列全。
+                            Every library API comes with its own usage contract. The contract covers when to init, when to destroy, what parameter ranges are valid, which return values must be checked, and which calls must be paired. LLM-generated harnesses violate these contracts a lot, because the LLM cannot infer a full state machine from a single function signature. The eight P2 sub-checks are listed in the P1.1–P2.8 checklist below.
                         </p>
                         <p>
                             举一个真碰到的例子。OSS-Fuzz 上的 <code>libyaml_emitter_fuzzer</code> 想做一件"<em>round-trip 验证</em>"的事:把 fuzz 输入解析成 YAML event,送进 emitter 重新序列化,然后再 parse 一遍序列化结果,看 event 序列是否一致。harness 主控制流(精简后)长这样:
